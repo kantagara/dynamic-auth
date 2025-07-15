@@ -14,10 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   platform: 
   clientVersion: 
-  environmentId: 7e187f40-4fa3-4323-bf64-8f57866eba5c
+  environmentId: c1564a11-63ec-4236-8414-ec7972cc767f
   appOrigin: 
   apiBaseUrl: 
   appLogoUrl: 
   appName: 
   cssOverrides: 
-  redirectUrl: 

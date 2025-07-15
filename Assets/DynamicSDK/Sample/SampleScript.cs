@@ -108,9 +108,11 @@ public class SampleScript : MonoBehaviour
         Debug.Log($"[SampleScript] JWT token received: {jwtToken}");
         UpdateButtonInteractability();
         string token = jwtToken.data.token;
-        string truncatedToken = token.Length > 20 
+
+        string truncatedToken = token.Length > 20
             ? $"{token.Substring(0, 10)}...{token.Substring(token.Length - 10)}"
             : token;
+
         jwtTokenText.text = "JWT Token: " + truncatedToken;
         UpdateStatusText("JWT token received");
     }
