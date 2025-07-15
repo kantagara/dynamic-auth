@@ -82,10 +82,10 @@ public class AuthScene : MonoBehaviour
 
     private void OnJwtTokenReceived(JwtTokenResponseMessage jwtToken)
     {
-        Debug.Log($"[DynamicTest] JWT token received");
         var jwt = jwtToken.data.token;
-
         Result.text = $"JWT token received:\n{jwt}";
+
+        Debug.Log($"[DynamicTest] JWT token received: {jwt}");
     }
 
     private void OnSDKError(string error)
