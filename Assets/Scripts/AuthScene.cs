@@ -20,11 +20,6 @@ public class AuthScene : MonoBehaviour
 
     void Awake()
     {
-        LogInButton.onClick.AddListener(ShowDynamicAuth);
-    }
-
-    void Start()
-    {
         DynamicSDKManager.OnWalletConnected += OnWalletConnected;
         DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
         DynamicSDKManager.OnUserAuthenticated += OnUserAuthenticated;
@@ -32,6 +27,21 @@ public class AuthScene : MonoBehaviour
         DynamicSDKManager.OnSDKError += OnSDKError;
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
 
+        LogInButton.onClick.AddListener(ShowDynamicAuth);
+    }
+
+    void OnDestroy()
+    {
+        DynamicSDKManager.OnWalletConnected -= OnWalletConnected;
+        DynamicSDKManager.OnWalletDisconnected -= OnWalletDisconnected;
+        DynamicSDKManager.OnUserAuthenticated -= OnUserAuthenticated;
+        DynamicSDKManager.OnJwtTokenReceived -= OnJwtTokenReceived;
+        DynamicSDKManager.OnSDKError -= OnSDKError;
+        DynamicSDKManager.OnWebViewClosed -= OnWebViewClosed;
+    }
+
+    void Start()
+    {
         var config = DynamicSDKConfig.Instance;
         config.transitionDuration = 0.25f;
         config.enableClickOutsideToClose = false;
