@@ -209,14 +209,25 @@ namespace DynamicSDK.Unity.Core
                 // If webview exists but not ready, retry after a short delay
                 if (webView != null && webView.gameObject.activeInHierarchy && !isWebViewReady)
                 {
-                    StartCoroutine(RetryMessageAfterDelay(jsonMessage, 0.5f));
+                    StartCoroutine(RetryMessageAfterDelay(jsonMessage, 3f));
                 }
             }
         }
 
         private IEnumerator RetryMessageAfterDelay(string jsonMessage, float delay)
         {
-            yield return new WaitForSeconds(delay);
+            var duration = 0f;
+            while (!isWebViewReady)
+            {
+                if (duration > delay)
+                {
+                    Debug.LogWarning($"[WebViewService] Retry failed - WebView still not ready");
+                    yield break;
+                }
+
+                yield return null;
+                duration += Time.deltaTime;
+            }
             
             // Try again, but only once to avoid infinite loops
             if (webView != null && webView.gameObject.activeInHierarchy && isWebViewReady)
@@ -419,8 +430,10 @@ namespace DynamicSDK.Unity.Core
             OnMessageReceived?.Invoke(msg);
         }
 
-        private void HandlePageFinished(UniWebView view, int statusCode, string url)
+        private async void HandlePageFinished(UniWebView view, int statusCode, string url)
         {
+            await Awaitable.WaitForSecondsAsync(0.5f);
+
             isWebViewReady = true;
             if (config.enableDebugLogs)
             {
