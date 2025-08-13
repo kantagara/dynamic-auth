@@ -14,7 +14,7 @@ public class AuthScene : MonoBehaviour
     [SerializeField] Button LogInButton;
 
     DynamicSDKManager m_sdk;
-    DynamicSDKManifest m_manifest;
+    bool m_walletConnected = false;
     bool m_isAuthenticating;
     int m_authResult = default;
 
@@ -55,20 +55,22 @@ public class AuthScene : MonoBehaviour
 
     private void ShowDynamicAuth()
     {
-        if (m_isAuthenticating)
-        {
-            return;
-        }
-
         if (!m_sdk.IsInitialized)
         {
             m_sdk.InitializeSDK();
         }
 
-        m_isAuthenticating = true;
-        m_authResult = default;
+        if (!m_walletConnected)
+        {
+            m_isAuthenticating = true;
+            m_authResult = default;
 
-        m_sdk.ConnectWallet();
+            m_sdk.ConnectWallet();
+        }
+        else
+        {
+            _ = GetJWT(delay: 0);
+        }
     }
 
     //////////////////////////////////////////////////
@@ -76,12 +78,14 @@ public class AuthScene : MonoBehaviour
     private void OnWalletConnected(string walletAddress)
     {
         Debug.Log($"[DynamicTest] Wallet connected: {walletAddress}");
+        m_walletConnected = true;
         m_authResult = 1;
     }
 
     private void OnWalletDisconnected()
     {
         Debug.Log($"[DynamicTest] Wallet disconnected");
+        m_walletConnected = false;
     }
 
     private void OnUserAuthenticated(UserInfo userInfo)
@@ -114,8 +118,23 @@ public class AuthScene : MonoBehaviour
 
             if (m_authResult > 0)
             {
-                DynamicSDKManager.Instance.GetJwtToken();
+                _ = GetJWT(delay: 0.5f);
             }
         }
+    }
+
+    async Awaitable GetJWT(float delay)
+    {
+        var cancelToken = destroyCancellationToken;
+        if (delay > 0)
+        {
+            await Awaitable.WaitForSecondsAsync(delay);
+            if (cancelToken.IsCancellationRequested)
+            {
+                return;
+            }
+        }
+
+        DynamicSDKManager.Instance.GetJwtToken();
     }
 }
