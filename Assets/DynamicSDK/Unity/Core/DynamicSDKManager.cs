@@ -7,6 +7,7 @@ using DynamicSDK.Unity.Messages;
 namespace DynamicSDK.Unity.Core
 {
     using DynamicSDK.Unity.Messages.Auth;
+    using DynamicSDK.Unity.Messages.Wallet;
 
     /// <summary>
     /// Main SDK Manager - Singleton pattern for easy access across all scenes
@@ -16,9 +17,9 @@ namespace DynamicSDK.Unity.Core
     {
         #region Singleton Implementation
 
-        private static          DynamicSDKManager _instance;
-        private static readonly object            _lock                  = new object();
-        private static          bool              _applicationIsQuitting = false;
+        private static DynamicSDKManager _instance;
+        private static readonly object _lock = new object();
+        private static bool _applicationIsQuitting = false;
 
         public static DynamicSDKManager Instance
         {
@@ -55,23 +56,27 @@ namespace DynamicSDK.Unity.Core
         #region Events
 
         // Authentication Events
-        public static event Action<bool>             OnConnectionStatusChanged;
-        public static event Action<string>           OnWalletConnected;
-        public static event Action<UserInfo>         OnUserAuthenticated;
+        public static event Action<bool> OnConnectionStatusChanged;
+        public static event Action<string> OnWalletConnected;
+        public static event Action<UserInfo> OnUserAuthenticated;
         public static event Action<WalletCredential> OnWalletInfoUpdated;
-        public static event Action                   OnWalletDisconnected;
+        public static event Action OnWalletDisconnected;
         public static event Action<JwtTokenResponseMessage> OnJwtTokenReceived;
 
         // Wallet Events  
         public static event Action<string> OnTransactionSent;
         public static event Action<string> OnMessageSigned;
-        public static event Action<string> OnBalanceUpdated;
+        public static event Action<BalanceResponseData> OnBalanceUpdated;
+        public static event Action<BalanceResponseData> OnWalletSwitched;
+        public static event Action<BalanceResponseData> OnNetworkSwitched;
+        public static event Action<WalletsResponseData> OnWalletsReceived;
+        public static event Action<NetworksResponseData> OnNetworksReceived;
 
         // WebView Events
         public static event Action OnWebViewClosed;
 
         // General Events
-        public static event Action         OnSDKInitialized;
+        public static event Action OnSDKInitialized;
         public static event Action<string> OnSDKError;
 
         #endregion
@@ -79,14 +84,14 @@ namespace DynamicSDK.Unity.Core
         #region Private Components
 
         private WebViewConnector webViewConnector;
-        private WebViewService   webViewService;
+        private WebViewService webViewService;
         private DynamicSDKConfig config;
 
-        private bool             isInitialized        = false;
-        private string           currentWalletAddress = "";
-        private bool             isConnected          = false;
-        private UserInfo         currentUserInfo      = null;
-        private WalletCredential currentWalletInfo    = null;
+        private bool isInitialized = false;
+        private string currentWalletAddress = "";
+        private bool isConnected = false;
+        private UserInfo currentUserInfo = null;
+        private WalletCredential currentWalletInfo = null;
 
         #endregion
 
@@ -236,15 +241,19 @@ namespace DynamicSDK.Unity.Core
             // Subscribe to WebViewConnector events
             if (webViewConnector != null)
             {
-                webViewConnector.OnWalletConnected    += HandleWalletConnected;
-                webViewConnector.OnUserAuthenticated  += HandleUserAuthenticated;
-                webViewConnector.OnWalletInfoUpdated  += HandleWalletInfoUpdated;
+                webViewConnector.OnWalletConnected += HandleWalletConnected;
+                webViewConnector.OnUserAuthenticated += HandleUserAuthenticated;
+                webViewConnector.OnWalletInfoUpdated += HandleWalletInfoUpdated;
                 webViewConnector.OnWalletDisconnected += HandleWalletDisconnected;
-                webViewConnector.OnTransactionSent    += HandleTransactionSent;
-                webViewConnector.OnMessageSigned      += HandleMessageSigned;
-                webViewConnector.OnBalanceUpdated     += HandleBalanceUpdated;
-                webViewConnector.OnError              += HandleError;
-                webViewConnector.OnJwtTokenReceived   += HandleJwtTokenReceived;
+                webViewConnector.OnTransactionSent += HandleTransactionSent;
+                webViewConnector.OnMessageSigned += HandleMessageSigned;
+                webViewConnector.OnBalanceUpdated += HandleBalanceUpdated;
+                webViewConnector.OnWalletsReceived += HandleWalletsReceived;
+                webViewConnector.OnWalletSwitched += HandleWalletSwitched;
+                webViewConnector.OnNetworkSwitched += HandleNetworkSwitched;
+                webViewConnector.OnNetworksReceived += HandleNetworksReceived;
+                webViewConnector.OnError += HandleError;
+                webViewConnector.OnJwtTokenReceived += HandleJwtTokenReceived;
             }
 
             // Subscribe to WebViewService events
@@ -441,6 +450,48 @@ namespace DynamicSDK.Unity.Core
         }
 
         /// <summary>
+        /// Get available wallets
+        /// </summary>
+        public void GetWallets()
+        {
+            if (!isInitialized)
+            {
+                Debug.LogError("[DynamicSDKManager] SDK not initialized!");
+                OnSDKError?.Invoke("SDK not initialized");
+
+                return;
+            }
+
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[DynamicSDKManager] Getting available wallets...");
+            }
+
+            webViewConnector?.GetWallets();
+        }
+
+        /// <summary>
+        /// Get available networks
+        /// </summary>
+        public void GetNetworks()
+        {
+            if (!isInitialized)
+            {
+                Debug.LogError("[DynamicSDKManager] SDK not initialized!");
+                OnSDKError?.Invoke("SDK not initialized");
+
+                return;
+            }
+
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[DynamicSDKManager] Getting available networks...");
+            }
+
+            webViewConnector?.GetNetworks();
+        }
+
+        /// <summary>
         /// Open WebView for user profile/dashboard
         /// </summary>
         public void OpenProfile()
@@ -488,6 +539,50 @@ namespace DynamicSDK.Unity.Core
             }
 
             webViewConnector?.GetJwtToken();
+        }
+
+        /// <summary>
+        /// Switch to a specific wallet
+        /// </summary>
+        /// <param name="walletId">The ID of the wallet to switch to</param>
+        public void SwitchWallet(string walletId)
+        {
+            if (!isInitialized)
+            {
+                Debug.LogError("[DynamicSDKManager] SDK not initialized!");
+                OnSDKError?.Invoke("SDK not initialized");
+
+                return;
+            }
+
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[DynamicSDKManager] Switching to wallet: {walletId}");
+            }
+
+            webViewConnector?.SwitchWallet(walletId);
+        }
+
+        /// <summary>
+        /// Switch to a specific network
+        /// </summary>
+        /// <param name="networkChainId">The chain ID of the network to switch to</param>
+        public void SwitchNetwork(string networkChainId)
+        {
+            if (!isInitialized)
+            {
+                Debug.LogError("[DynamicSDKManager] SDK not initialized!");
+                OnSDKError?.Invoke("SDK not initialized");
+
+                return;
+            }
+
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[DynamicSDKManager] Switching to network: {networkChainId}");
+            }
+
+            webViewConnector?.SwitchNetwork(networkChainId);
         }
 
         /// <summary>
@@ -556,7 +651,7 @@ namespace DynamicSDK.Unity.Core
         private void HandleWalletConnected(string walletAddress)
         {
             currentWalletAddress = walletAddress;
-            isConnected          = true;
+            isConnected = true;
 
             if (config.enableDebugLogs)
             {
@@ -585,7 +680,7 @@ namespace DynamicSDK.Unity.Core
 
             if (config.enableDebugLogs)
             {
-                Debug.Log($"[DynamicSDKManager] Wallet info updated: {walletInfo?.address} on {walletInfo?.chain}");
+                Debug.Log($"[DynamicSDKManager] Wallet info updated: {walletInfo}");
             }
 
             OnWalletInfoUpdated?.Invoke(walletInfo);
@@ -594,9 +689,9 @@ namespace DynamicSDK.Unity.Core
         private void HandleWalletDisconnected()
         {
             currentWalletAddress = "";
-            currentUserInfo      = null;
-            currentWalletInfo    = null;
-            isConnected          = false;
+            currentUserInfo = null;
+            currentWalletInfo = null;
+            isConnected = false;
 
             if (config.enableDebugLogs)
             {
@@ -627,7 +722,7 @@ namespace DynamicSDK.Unity.Core
             OnMessageSigned?.Invoke(signature);
         }
 
-        private void HandleBalanceUpdated(string balance)
+        private void HandleBalanceUpdated(BalanceResponseData balance)
         {
             if (config.enableDebugLogs)
             {
@@ -635,6 +730,47 @@ namespace DynamicSDK.Unity.Core
             }
 
             OnBalanceUpdated?.Invoke(balance);
+        }
+
+        private void HandleWalletSwitched(BalanceResponseData balance)
+        {
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[DynamicSDKManager] Wallet switched: {balance}");
+            }
+
+            OnWalletSwitched?.Invoke(balance);
+        }
+
+        private void HandleNetworkSwitched(BalanceResponseData balance)
+        {
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[DynamicSDKManager] Network switched: {balance}");
+            }
+
+            OnNetworkSwitched?.Invoke(balance);
+
+        }
+
+        private void HandleWalletsReceived(WalletsResponseData walletsData)
+        {
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[DynamicSDKManager] Wallets received: {walletsData}");
+            }
+
+            OnWalletsReceived?.Invoke(walletsData);
+        }
+
+        private void HandleNetworksReceived(NetworksResponseData networksData)
+        {
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[DynamicSDKManager] Networks received: {networksData}");
+            }
+
+            OnNetworksReceived?.Invoke(networksData);
         }
 
         private void HandleError(string error)
@@ -675,11 +811,11 @@ namespace DynamicSDK.Unity.Core
         {
             return new Dictionary<string, object>
             {
-                ["isInitialized"]        = isInitialized,
-                ["isWalletConnected"]    = isConnected,
+                ["isInitialized"] = isInitialized,
+                ["isWalletConnected"] = isConnected,
                 ["currentWalletAddress"] = currentWalletAddress,
-                ["sdkVersion"]           = "1.0.0",
-                ["configUrl"]            = config?.startUrl ?? "Not set"
+                ["sdkVersion"] = "1.0.0",
+                ["configUrl"] = config?.startUrl ?? "Not set"
             };
         }
 
@@ -695,7 +831,7 @@ namespace DynamicSDK.Unity.Core
 
             DisconnectWallet();
             currentWalletAddress = "";
-            isConnected          = false;
+            isConnected = false;
 
             // Close any open WebViews
             webViewService?.CloseWebView();

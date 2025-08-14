@@ -13,27 +13,37 @@ using Newtonsoft.Json;
 /// </summary>
 public class WebViewConnector : MonoBehaviour
 {
-    [Header("SDK Configuration")] [SerializeField]
+    [Header("SDK Configuration")]
+    [SerializeField]
     private DynamicSDKConfig config;
 
     // Core service components - removed UIManager dependency
-    private WebViewService        webViewService;
+    private WebViewService webViewService;
     private MessageHandlerService messageHandler;
 
     // Current wallet state
     private string currentWalletAddress;
+    private string currentWalletChain = "sui"; // Default to sui, but will be updated from wallet info
+
+    // Request queue to prevent simultaneous WebView operations
+    private System.Collections.Generic.Queue<System.Action> requestQueue = new System.Collections.Generic.Queue<System.Action>();
+    private bool isProcessingRequest = false;
 
     // ============================================================================
     // EVENTS FOR DYNAMICSDKMANAGER
     // ============================================================================
-    public System.Action<string>           OnWalletConnected;
-    public System.Action<UserInfo>         OnUserAuthenticated;
+    public System.Action<string> OnWalletConnected;
+    public System.Action<UserInfo> OnUserAuthenticated;
     public System.Action<WalletCredential> OnWalletInfoUpdated;
-    public System.Action                   OnWalletDisconnected;
-    public System.Action<string>           OnTransactionSent;
-    public System.Action<string>           OnMessageSigned;
-    public System.Action<string>           OnBalanceUpdated;
-    public System.Action<string>           OnError;
+    public System.Action OnWalletDisconnected;
+    public System.Action<string> OnTransactionSent;
+    public System.Action<string> OnMessageSigned;
+    public System.Action<BalanceResponseData> OnBalanceUpdated;
+    public System.Action<BalanceResponseData> OnWalletSwitched;
+    public System.Action<BalanceResponseData> OnNetworkSwitched;
+    public System.Action<WalletsResponseData> OnWalletsReceived;
+    public System.Action<NetworksResponseData> OnNetworksReceived;
+    public System.Action<string> OnError;
     public System.Action<JwtTokenResponseMessage> OnJwtTokenReceived;
 
     // ============================================================================
@@ -66,6 +76,16 @@ public class WebViewConnector : MonoBehaviour
     public void GetBalance() { GetBalanceInternal(); }
 
     /// <summary>
+    /// Get wallets - public method for DynamicSDKManager
+    /// </summary>
+    public void GetWallets() { GetWalletsInternal(); }
+
+    /// <summary>
+    /// Get networks - public method for DynamicSDKManager
+    /// </summary>
+    public void GetNetworks() { GetNetworksInternal(); }
+
+    /// <summary>
     /// Check connection status - public method for DynamicSDKManager
     /// </summary>
     public void CheckConnectionStatus()
@@ -92,6 +112,55 @@ public class WebViewConnector : MonoBehaviour
     /// Get JWT token - public method for DynamicSDKManager
     /// </summary>
     public void GetJwtToken() { GetJwtTokenInternal(); }
+
+    /// <summary>
+    /// Switch wallet - public method for DynamicSDKManager
+    /// </summary>
+    public void SwitchWallet(string walletId) { SwitchWalletInternal(walletId); }
+
+    /// <summary>
+    /// Switch network - public method for DynamicSDKManager
+    /// </summary>
+    public void SwitchNetwork(string networkChainId) { SwitchNetworkInternal(networkChainId); }
+
+    // ============================================================================
+    // REQUEST QUEUE MANAGEMENT
+    // ============================================================================
+
+    /// <summary>
+    /// Queue a WebView request to prevent simultaneous operations
+    /// </summary>
+    private void QueueWebViewRequest(System.Action requestAction)
+    {
+        requestQueue.Enqueue(requestAction);
+        ProcessRequestQueue();
+    }
+
+    /// <summary>
+    /// Process the next request in the queue
+    /// </summary>
+    private void ProcessRequestQueue()
+    {
+        if (isProcessingRequest || requestQueue.Count == 0)
+            return;
+
+        // Check if WebViewService is ready before processing
+        if (this == null || webViewService == null)
+        {
+            Debug.LogWarning("[WebViewConnector] WebView service not ready, clearing request queue");
+            requestQueue.Clear();
+            isProcessingRequest = false;
+            return;
+        }
+
+        isProcessingRequest = true;
+        var nextRequest = requestQueue.Dequeue();
+
+        Debug.Log($"[WebViewConnector] Processing queued request. Remaining in queue: {requestQueue.Count}");
+
+        // Execute the request
+        nextRequest?.Invoke();
+    }
 
     // ============================================================================
     // LIFECYCLE METHODS
@@ -120,6 +189,32 @@ public class WebViewConnector : MonoBehaviour
         }
 
         messageHandler = new MessageHandlerService();
+
+        // Subscribe to WebView closed event to process next request
+        if (webViewService != null)
+        {
+            webViewService.OnWebViewClosed += OnWebViewClosed;
+        }
+    }
+
+    /// <summary>
+    /// Called when WebView is closed/hidden - process next request in queue
+    /// </summary>
+    private void OnWebViewClosed()
+    {
+        // Process next request directly without coroutine delay
+        isProcessingRequest = false;
+
+        // Use Invoke to add a small delay without coroutines
+        if (this != null && gameObject != null && gameObject.activeInHierarchy)
+        {
+            Invoke(nameof(ProcessRequestQueue), 0.5f);
+        }
+        else
+        {
+            // If GameObject is inactive, process immediately
+            ProcessRequestQueue();
+        }
     }
 
     private void SetupEventHandlers()
@@ -136,18 +231,22 @@ public class WebViewConnector : MonoBehaviour
 
     private void SetupMessageHandlerEvents()
     {
-        messageHandler.OnAuthSuccess       += HandleAuthSuccess;
-        messageHandler.OnAuthFailed        += HandleAuthFailed;
-        messageHandler.OnLoggedOut         += HandleLoggedOut;
+        messageHandler.OnAuthSuccess += HandleAuthSuccess;
+        messageHandler.OnAuthFailed += HandleAuthFailed;
+        messageHandler.OnLoggedOut += HandleLoggedOut;
         messageHandler.OnAuthenticatedUser += HandleAuthenticatedUser;
-        messageHandler.OnJwtTokenResponse  += HandleJwtTokenResponse;
+        messageHandler.OnJwtTokenResponse += HandleJwtTokenResponse;
 
-        messageHandler.OnBalanceResponse     += HandleBalanceResponse;
+        messageHandler.OnBalanceResponse += HandleBalanceResponse;
+        messageHandler.OnWalletSwitched += HandleWalletSwitched;
+        messageHandler.OnNetworkSwitched += HandleNetworkSwitched;
         messageHandler.OnSignMessageResponse += HandleSignMessageResponse;
         messageHandler.OnTransactionResponse += HandleTransactionResponse;
-        messageHandler.OnWalletConnected     += HandleWalletConnected;
-        messageHandler.OnWalletDisconnected  += HandleWalletDisconnected;
-        messageHandler.OnWalletError         += HandleWalletError;
+        messageHandler.OnWalletConnected += HandleWalletConnected;
+        messageHandler.OnWalletDisconnected += HandleWalletDisconnected;
+        messageHandler.OnWalletError += HandleWalletError;
+        messageHandler.OnWalletsResponse += HandleWalletsResponse;
+        messageHandler.OnNetworksResponse += HandleNetworksResponse;
     }
 
     // ============================================================================
@@ -173,10 +272,9 @@ public class WebViewConnector : MonoBehaviour
         }
 
         // Display wallet info if available
-        if (message.data.wallets != null && message.data.wallets.Length > 0)
+        if (message.data.primaryWallet != null)
         {
-            var wallet = message.data.wallets[0];
-            UpdateWalletInfo(wallet);
+            UpdateWalletInfo(message.data.primaryWallet);
 
             // Fire wallet connected event for scene transition
             if (!string.IsNullOrEmpty(currentWalletAddress))
@@ -296,6 +394,12 @@ public class WebViewConnector : MonoBehaviour
 
         currentWalletAddress = wallet.address;
 
+        // Update current wallet chain from wallet info
+        if (!string.IsNullOrEmpty(wallet.chain))
+        {
+            currentWalletChain = wallet.chain.ToLower();
+        }
+
         Debug.Log($"[WebViewConnector] Wallet Info - Address: {FormatAddress(wallet.address)}, Chain: {wallet.chain}, Balance: {wallet.balance}");
 
         // Fire wallet info updated event
@@ -305,12 +409,15 @@ public class WebViewConnector : MonoBehaviour
     private void ClearWalletInfo()
     {
         currentWalletAddress = null;
+        currentWalletChain = "sui"; // Reset to default
         Debug.Log("[WebViewConnector] Wallet info cleared");
     }
 
     // ============================================================================
     // WALLET MESSAGE HANDLERS
     // ============================================================================
+
+
 
     private void HandleBalanceResponse(BalanceResponseMessage message)
     {
@@ -329,31 +436,148 @@ public class WebViewConnector : MonoBehaviour
             // Update current wallet address from balance response
             currentWalletAddress = message.data.walletAddress;
 
+            // Update current wallet chain from balance response
+            if (!string.IsNullOrEmpty(message.data.chain))
+            {
+                currentWalletChain = message.data.chain.ToLower();
+            }
+
+            // Get correct symbol for the chain
+            string correctSymbol = GetCorrectSymbolForChain(message.data.chain, message.data.symbol);
+
             // If we have chain info in balance response, create/update wallet info
             if (!string.IsNullOrEmpty(message.data.chain))
             {
                 var walletInfo = new WalletCredential
                 {
-                    address  = message.data.walletAddress,
-                    chain    = message.data.chain,
-                    balance  = message.data.balance,
-                    symbol   = message.data.symbol,
+                    address = message.data.walletAddress,
+                    chain = message.data.chain,
+                    balance = message.data.balance,
+                    network = message.data.network,
+                    symbol = correctSymbol,
                     decimals = message.data.decimals,
-                    network  = "mainnet" // Default network assumption
                 };
 
                 // Fire wallet info updated event
                 OnWalletInfoUpdated?.Invoke(walletInfo);
             }
 
-            // Fire balance updated event
-            OnBalanceUpdated?.Invoke($"{message.data.balance} {message.data.symbol}");
+            // Fire balance updated event with correct symbol based on chain
+            OnBalanceUpdated?.Invoke(message.data);
         }
         else
         {
             Debug.LogError($"[WebViewConnector] Balance request failed: {message.data.error}");
             OnError?.Invoke($"Failed to get balance: {message.data.error}");
         }
+        webViewService?.HideWithAnimation();
+    }
+    private void HandleWalletSwitched(BalanceResponseMessage message)
+    {
+        if (message?.data == null)
+        {
+            Debug.LogError("[WebViewConnector] Balance response message data is null");
+            OnError?.Invoke("Failed to get balance: Invalid response");
+
+            return;
+        }
+
+        if (message.data.success)
+        {
+            Debug.Log($"[WebViewConnector] Balance Response - Address: {message.data.walletAddress}, Balance: {message.data.balance} {message.data.symbol}");
+
+            // Update current wallet address from balance response
+            currentWalletAddress = message.data.walletAddress;
+
+            // Update current wallet chain from balance response
+            if (!string.IsNullOrEmpty(message.data.chain))
+            {
+                currentWalletChain = message.data.chain.ToLower();
+            }
+
+            // Get correct symbol for the chain
+            string correctSymbol = GetCorrectSymbolForChain(message.data.chain, message.data.symbol);
+
+            // If we have chain info in balance response, create/update wallet info
+            if (!string.IsNullOrEmpty(message.data.chain))
+            {
+                var walletInfo = new WalletCredential
+                {
+                    address = message.data.walletAddress,
+                    chain = message.data.chain,
+                    network = message.data.network,
+                    balance = message.data.balance,
+                    symbol = correctSymbol,
+                    decimals = message.data.decimals,
+                };
+
+                // Fire wallet info updated event
+                OnWalletInfoUpdated?.Invoke(walletInfo);
+            }
+
+            // Fire balance updated event with correct symbol based on chain
+            OnWalletSwitched?.Invoke(message.data);
+        }
+        else
+        {
+            Debug.LogError($"[WebViewConnector] Balance request failed: {message.data.error}");
+            OnError?.Invoke($"Failed to get balance: {message.data.error}");
+        }
+        webViewService?.HideWithAnimation();
+    }
+
+    private void HandleNetworkSwitched(BalanceResponseMessage message)
+    {
+        if (message?.data == null)
+        {
+            Debug.LogError("[WebViewConnector] Balance response message data is null");
+            OnError?.Invoke("Failed to get balance: Invalid response");
+
+            return;
+        }
+
+        if (message.data.success)
+        {
+            Debug.Log($"[WebViewConnector] Balance Response - Address: {message.data.walletAddress}, Balance: {message.data.balance} {message.data.symbol}");
+
+            // Update current wallet address from balance response
+            currentWalletAddress = message.data.walletAddress;
+
+            // Update current wallet chain from balance response
+            if (!string.IsNullOrEmpty(message.data.chain))
+            {
+                currentWalletChain = message.data.chain.ToLower();
+            }
+
+            // Get correct symbol for the chain
+            string correctSymbol = GetCorrectSymbolForChain(message.data.chain, message.data.symbol);
+
+            // If we have chain info in balance response, create/update wallet info
+            if (!string.IsNullOrEmpty(message.data.chain))
+            {
+                var walletInfo = new WalletCredential
+                {
+                    address = message.data.walletAddress,
+                    chain = message.data.chain,
+                    network = message.data.network,
+                    balance = message.data.balance,
+                    symbol = correctSymbol,
+                    decimals = message.data.decimals,
+                };
+
+                // Fire wallet info updated event
+                OnWalletInfoUpdated?.Invoke(walletInfo);
+            }
+
+            // Fire balance updated event with correct symbol based on chain
+            OnNetworkSwitched?.Invoke(message.data);
+        }
+        else
+        {
+            Debug.LogError($"[WebViewConnector] Balance request failed: {message.data.error}");
+            OnError?.Invoke($"Failed to get balance: {message.data.error}");
+        }
+        webViewService?.HideWithAnimation();
     }
 
     private void HandleSignMessageResponse(SignMessageResponseMessage message)
@@ -471,6 +695,57 @@ public class WebViewConnector : MonoBehaviour
         OnError?.Invoke($"Wallet error: {message.data.error}");
     }
 
+    private void HandleWalletsResponse(WalletsResponseMessage message)
+    {
+        if (message?.data == null)
+        {
+            Debug.LogError("[WebViewConnector] Wallets response message data is null");
+            OnError?.Invoke("Failed to get wallets: Invalid response");
+            return;
+        }
+
+        if (message.data.success)
+        {
+            Debug.Log($"[WebViewConnector] Wallets Response - Found {message.data.wallets?.Length ?? 0} wallets");
+
+            // Fire wallets received event
+            OnWalletsReceived?.Invoke(message.data);
+        }
+        else
+        {
+            Debug.LogError($"[WebViewConnector] Get wallets failed: {message.data.error}");
+            OnError?.Invoke($"Failed to get wallets: {message.data.error}");
+        }
+
+        // Hide webview after wallets operation
+        webViewService?.HideWithAnimation();
+    }
+
+    private void HandleNetworksResponse(NetworksResponseMessage message)
+    {
+        if (message?.data == null)
+        {
+            Debug.LogError("[WebViewConnector] Networks response message data is null");
+            OnError?.Invoke("Failed to get networks: Invalid response");
+            return;
+        }
+
+        if (message.data.success)
+        {
+            Debug.Log($"[WebViewConnector] Networks Response - Found {message.data.networks?.Length ?? 0} networks");
+            // Fire networks received event
+            OnNetworksReceived?.Invoke(message.data);
+        }
+        else
+        {
+            Debug.LogError($"[WebViewConnector] Get networks failed: {message.data.error}");
+            OnError?.Invoke($"Failed to get networks: {message.data.error}");
+        }
+
+        // Hide webview after networks operation
+        webViewService?.HideWithAnimation();
+    }
+
     // ============================================================================
     // BUTTON HANDLERS
     // ============================================================================
@@ -486,9 +761,13 @@ public class WebViewConnector : MonoBehaviour
 
         Debug.Log("[WebViewConnector] Connect wallet requested");
 
-        // Make sure the WebView is open and send request
-        webViewService?.OpenBottomSheet();
-        webViewService?.RetryWithDelay(SendConnectWalletRequest, 1.0f);
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Make sure the WebView is open and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(SendConnectWalletRequest, 1.0f);
+        });
     }
 
     private void SendConnectWalletRequest()
@@ -508,9 +787,13 @@ public class WebViewConnector : MonoBehaviour
 
         Debug.Log("[WebViewConnector] Disconnect wallet requested");
 
-        // Open WebView if needed and send disconnect request
-        webViewService?.OpenBottomSheet();
-        webViewService?.RetryWithDelay(SendDisconnectRequest, 1.0f);
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send disconnect request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(SendDisconnectRequest, 1.0f);
+        });
     }
 
     private void SendDisconnectRequest()
@@ -555,9 +838,13 @@ public class WebViewConnector : MonoBehaviour
 
         Debug.Log($"[WebViewConnector] Sign message requested: {message}");
 
-        // Open WebView if needed and send request
-        webViewService?.OpenBottomSheet();
-        webViewService?.RetryWithDelay(() => SendSignMessageRequest(message), 1.0f);
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(() => SendSignMessageRequest(message), 1.0f);
+        });
     }
 
     private void SendSignMessageRequest(string message)
@@ -613,14 +900,18 @@ public class WebViewConnector : MonoBehaviour
 
         Debug.Log($"[WebViewConnector] Send transaction requested: {value} to {to} on {network}");
 
-        // Open WebView if needed and send request
-        webViewService?.OpenBottomSheet();
-        webViewService?.RetryWithDelay(() => SendTransactionRequest(to, value, network), 1.0f);
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(() => SendTransactionRequest(to, value, network), 1.0f);
+        });
     }
 
     private void SendTransactionRequest(string toAddress, string amount, string network = "mainnet")
     {
-        string request = RequestBuilder.BuildTransactionRequest(currentWalletAddress, toAddress, amount, "sui", network);
+        string request = RequestBuilder.BuildTransactionRequest(currentWalletAddress, toAddress, amount, currentWalletChain, network);
         webViewService?.SendMessage(request);
 
         Debug.Log($"[WebViewConnector] Sent transaction request: {request}");
@@ -628,17 +919,89 @@ public class WebViewConnector : MonoBehaviour
 
     private void GetBalanceInternal()
     {
-        if (string.IsNullOrEmpty(currentWalletAddress))
+        // Check if WebViewService is ready before proceeding
+        if (this == null || webViewService == null)
         {
-            Debug.LogError("[WebViewConnector] No wallet connected");
-            OnError?.Invoke("No wallet connected");
-
+            Debug.LogWarning("[WebViewConnector] Cannot get balance - WebView service not ready");
+            OnError?.Invoke("SDK not ready - please try again");
             return;
         }
 
         Debug.Log("[WebViewConnector] Getting wallet balance...");
-        string message = RequestBuilder.BuildGetBalanceRequest(currentWalletAddress);
-        webViewService?.SendMessage(message);
+
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(() => SendGetBalanceRequest(), 1.0f);
+        });
+    }
+
+    private void SendGetBalanceRequest()
+    {
+        string request = RequestBuilder.BuildGetBalanceRequest();
+        webViewService?.SendMessage(request);
+
+        Debug.Log($"[WebViewConnector] Sent get balance request: {request}");
+    }
+
+    private void GetWalletsInternal()
+    {
+        // Check if WebViewService is ready before proceeding
+        if (this == null || webViewService == null)
+        {
+            Debug.LogWarning("[WebViewConnector] Cannot get wallets - WebView service not ready");
+            OnError?.Invoke("SDK not ready - please try again");
+            return;
+        }
+
+        Debug.Log("[WebViewConnector] Getting available wallets...");
+
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(() => SendGetWalletsRequest(), 1.0f);
+        });
+    }
+
+    private void SendGetWalletsRequest()
+    {
+        string request = RequestBuilder.BuildGetWalletsRequest();
+        webViewService?.SendMessage(request);
+
+        Debug.Log($"[WebViewConnector] Sent get wallets request: {request}");
+    }
+
+    private void GetNetworksInternal()
+    {
+        // Check if WebViewService is ready before proceeding
+        if (this == null || webViewService == null)
+        {
+            Debug.LogWarning("[WebViewConnector] Cannot get networks - WebView service not ready");
+            OnError?.Invoke("SDK not ready - please try again");
+            return;
+        }
+
+        Debug.Log("[WebViewConnector] Getting available networks...");
+
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(() => SendGetNetworksRequest(), 1.0f);
+        });
+    }
+
+    private void SendGetNetworksRequest()
+    {
+        string request = RequestBuilder.BuildGetNetworksRequest();
+        webViewService?.SendMessage(request);
+
+        Debug.Log($"[WebViewConnector] Sent get networks request: {request}");
     }
 
     // ============================================================================
@@ -655,8 +1018,53 @@ public class WebViewConnector : MonoBehaviour
 
     private string GetFullWalletAddress() { return currentWalletAddress; }
 
+    /// <summary>
+    /// Get correct symbol for a given chain, fallback to provided symbol if chain not recognized
+    /// </summary>
+    private string GetCorrectSymbolForChain(string chain, string fallbackSymbol)
+    {
+        if (string.IsNullOrEmpty(chain))
+            return fallbackSymbol;
+
+        // Map chains to their native symbols
+        switch (chain.ToLower())
+        {
+            case "sui":
+                return "SUI";
+            case "ethereum":
+            case "eth":
+            case "evm":
+                return "ETH";
+            case "solana":
+            case "sol":
+                return "SOL";
+            case "polygon":
+            case "matic":
+                return "MATIC";
+            case "binance":
+            case "bsc":
+            case "bnb":
+                return "BNB";
+            case "avalanche":
+            case "avax":
+                return "AVAX";
+            default:
+                // Return original symbol if chain not recognized
+                return fallbackSymbol ?? "TOKEN";
+        }
+    }
+
     void OnDestroy()
     {
+        // Cancel any pending Invoke calls
+        CancelInvoke();
+
+        // Unsubscribe from events
+        if (webViewService != null)
+        {
+            webViewService.OnWebViewClosed -= OnWebViewClosed;
+        }
+
         // Clean up services
         webViewService?.CloseWebView();
     }
@@ -674,9 +1082,13 @@ public class WebViewConnector : MonoBehaviour
 
         Debug.Log("[WebViewConnector] Opening profile");
 
-        // Open WebView if needed and send request
-        webViewService?.OpenBottomSheet();
-        webViewService?.RetryWithDelay(() => SendOpenProfileRequest(), 1.0f);
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(() => SendOpenProfileRequest(), 1.0f);
+        });
     }
 
     private void SendOpenProfileRequest()
@@ -691,9 +1103,13 @@ public class WebViewConnector : MonoBehaviour
     {
         Debug.Log("[WebViewConnector] Getting JWT token");
 
-        // Open WebView if needed and send request
-        webViewService?.OpenBottomSheet();
-        webViewService?.RetryWithDelay(() => SendGetJwtTokenRequest(), 1.0f);
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(() => SendGetJwtTokenRequest(), 1.0f);
+        });
     }
 
     private void SendGetJwtTokenRequest()
@@ -702,5 +1118,63 @@ public class WebViewConnector : MonoBehaviour
         webViewService?.SendMessage(request);
 
         Debug.Log($"[WebViewConnector] Sent get JWT token request: {request}");
+    }
+
+    private void SwitchWalletInternal(string walletId)
+    {
+        // Check if WebViewService is ready before proceeding
+        if (this == null || webViewService == null)
+        {
+            Debug.LogWarning("[WebViewConnector] Cannot switch wallet - WebView service not ready");
+            OnError?.Invoke("SDK not ready - please try again");
+            return;
+        }
+
+        Debug.Log($"[WebViewConnector] Switching to wallet: {walletId}");
+
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(() => SendSwitchWalletRequest(walletId), 1.0f);
+        });
+    }
+
+    private void SendSwitchWalletRequest(string walletId)
+    {
+        string request = RequestBuilder.BuildSwitchWalletRequest(walletId);
+        webViewService?.SendMessage(request);
+
+        Debug.Log($"[WebViewConnector] Sent switch wallet request: {request}");
+    }
+
+    private void SwitchNetworkInternal(string networkChainId)
+    {
+        // Check if WebViewService is ready before proceeding
+        if (this == null || webViewService == null)
+        {
+            Debug.LogWarning("[WebViewConnector] Cannot switch network - WebView service not ready");
+            OnError?.Invoke("SDK not ready - please try again");
+            return;
+        }
+
+        Debug.Log($"[WebViewConnector] Switching to network: {networkChainId}");
+
+        // Queue this request to prevent conflicts with other WebView operations
+        QueueWebViewRequest(() =>
+        {
+            // Open WebView if needed and send request
+            webViewService?.OpenBottomSheet();
+            webViewService?.RetryWithDelay(() => SendSwitchNetworkRequest(networkChainId), 1.0f);
+        });
+    }
+
+    private void SendSwitchNetworkRequest(string networkChainId)
+    {
+        string request = RequestBuilder.BuildSwitchNetworkRequest(networkChainId);
+        webViewService?.SendMessage(request);
+
+        Debug.Log($"[WebViewConnector] Sent switch network request: {request}");
     }
 }

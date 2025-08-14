@@ -1,3 +1,4 @@
+/*
 using UnityEngine;
 using DynamicSDK.Unity.Utils;
 
@@ -83,3 +84,4 @@ namespace DynamicSDK.Sample
         }
     }
 }
+*/

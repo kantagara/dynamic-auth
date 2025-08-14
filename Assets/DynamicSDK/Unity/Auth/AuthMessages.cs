@@ -10,11 +10,12 @@ namespace DynamicSDK.Unity.Messages.Auth
     [Serializable]
     public class AuthSuccessData
     {
-        public UserInfo           user;
+        public WalletCredential primaryWallet;
+        public UserInfo user;
         public WalletCredential[] wallets;
-        public string             authMethod;
-        public string             provider;
-        public string             sessionToken;
+        public string authMethod;
+        public string provider;
+        public string sessionToken;
     }
 
     [Serializable]
@@ -24,7 +25,7 @@ namespace DynamicSDK.Unity.Messages.Auth
 
         public AuthSuccessMessage()
         {
-            type   = "auth";
+            type = "auth";
             action = AuthActions.AUTH_SUCCESS;
         }
     }
@@ -45,7 +46,7 @@ namespace DynamicSDK.Unity.Messages.Auth
 
         public AuthFailedMessage()
         {
-            type   = "auth";
+            type = "auth";
             action = AuthActions.AUTH_FAILED;
         }
     }
@@ -67,9 +68,9 @@ namespace DynamicSDK.Unity.Messages.Auth
 
         public LogoutMessage()
         {
-            type   = "auth";
+            type = "auth";
             action = AuthActions.LOGOUT;
-            data   = new LogoutData { reason = "user_requested" };
+            data = new LogoutData { reason = "user_requested" };
         }
     }
 
@@ -91,7 +92,7 @@ namespace DynamicSDK.Unity.Messages.Auth
 
         public LoggedOutMessage()
         {
-            type   = "auth";
+            type = "auth";
             action = AuthActions.LOGGED_OUT;
         }
     }
@@ -103,9 +104,9 @@ namespace DynamicSDK.Unity.Messages.Auth
     [Serializable]
     public class HandleAuthenticatedUserData
     {
-        public UserInfo           user;
+        public UserInfo user;
         public WalletCredential[] wallets;
-        public string             sessionToken;
+        public string sessionToken;
     }
 
     [Serializable]
@@ -115,7 +116,7 @@ namespace DynamicSDK.Unity.Messages.Auth
 
         public HandleAuthenticatedUserMessage()
         {
-            type   = "auth";
+            type = "auth";
             action = AuthActions.HANDLE_AUTHENTICATED_USER;
         }
     }
@@ -127,9 +128,9 @@ namespace DynamicSDK.Unity.Messages.Auth
     [Serializable]
     public class AuthRequestData
     {
-        public string   gameId;
+        public string gameId;
         public string[] requiredChains;
-        public int      sessionExpiry;
+        public int sessionExpiry;
     }
 
     [Serializable]
@@ -139,7 +140,7 @@ namespace DynamicSDK.Unity.Messages.Auth
 
         public AuthRequestMessage()
         {
-            type   = "auth";
+            type = "auth";
             action = AuthActions.AUTH_REQUEST;
         }
     }
@@ -161,7 +162,7 @@ namespace DynamicSDK.Unity.Messages.Auth
 
         public OpenProfileMessage()
         {
-            type   = "auth";
+            type = "auth";
             action = AuthActions.OPEN_PROFILE;
         }
     }
@@ -183,9 +184,9 @@ namespace DynamicSDK.Unity.Messages.Auth
 
         public GetJwtTokenMessage()
         {
-            type   = "auth";
+            type = "auth";
             action = AuthActions.GET_JWT_TOKEN;
-            data   = new GetJwtTokenData();
+            data = new GetJwtTokenData();
         }
     }
 
@@ -199,7 +200,7 @@ namespace DynamicSDK.Unity.Messages.Auth
         public string token;
         public string userId;
         public string email;
-        public long   timestamp;
+        public long timestamp;
     }
 
     [Serializable]
@@ -209,7 +210,7 @@ namespace DynamicSDK.Unity.Messages.Auth
 
         public JwtTokenResponseMessage()
         {
-            type   = "auth";
+            type = "auth";
             action = AuthActions.JWT_TOKEN_RESPONSE;
         }
     }

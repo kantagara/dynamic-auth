@@ -50,12 +50,12 @@ namespace DynamicSDK.Unity.Core
                 {
                     // Convert Unity screen coordinates to match webview coordinates
                     Vector2 convertedPosition = new Vector2(inputPosition.x, Screen.height - inputPosition.y);
-                    
+
                     if (config.enableDebugLogs)
                     {
                         Debug.Log($"[WebViewService] Input detected at {inputPosition} -> converted: {convertedPosition}, webview rect: {webViewRect}, contains: {webViewRect.Contains(convertedPosition)}");
                     }
-                    
+
                     if (!webViewRect.Contains(convertedPosition))
                     {
                         if (config.enableDebugLogs)
@@ -136,7 +136,7 @@ namespace DynamicSDK.Unity.Core
             {
                 Debug.Log("[WebViewService] Resetting WebView...");
             }
-            
+
             CloseWebView();
             // Next OpenBottomSheet() call will create a fresh webview
         }
@@ -152,12 +152,12 @@ namespace DynamicSDK.Unity.Core
                 {
                     Debug.Log("[WebViewService] Pre-loading WebView in background...");
                 }
-                
+
                 // Create and setup webview
                 CreateWebView();
                 SetupWebViewFrame();
                 ConfigureWebView();
-                
+
                 // Load URL but keep hidden
                 PreloadURL();
             }
@@ -181,18 +181,19 @@ namespace DynamicSDK.Unity.Core
                 {
                     Debug.Log($"[WebViewService] Sending message: {jsonMessage}");
                 }
-                
+
                 // Determine event type based on message content
                 string eventType = DetermineEventType(jsonMessage);
-                
+
                 // Send message via JavaScript custom event (matching original implementation)
                 string script = $@"
                 window.dispatchEvent(new CustomEvent('{eventType}', {{
                     detail: {jsonMessage}
                 }}));
                 ";
-                
-                webView.EvaluateJavaScript(script, (result) => {
+
+                webView.EvaluateJavaScript(script, (result) =>
+                {
                     if (config.enableDebugLogs)
                     {
                         Debug.Log($"[WebViewService] JS sent to WebView: {script}");
@@ -201,34 +202,23 @@ namespace DynamicSDK.Unity.Core
             }
             else
             {
-                string reason = webView == null ? "WebView is not initialized" : 
-                               !webView.gameObject.activeInHierarchy ? "WebView is not active" : 
+                string reason = webView == null ? "WebView is not initialized" :
+                               !webView.gameObject.activeInHierarchy ? "WebView is not active" :
                                "WebView is not ready";
                 Debug.LogWarning($"[WebViewService] Cannot send message - {reason}");
-                
+
                 // If webview exists but not ready, retry after a short delay
                 if (webView != null && webView.gameObject.activeInHierarchy && !isWebViewReady)
                 {
-                    StartCoroutine(RetryMessageAfterDelay(jsonMessage, 3f));
+                    StartCoroutine(RetryMessageAfterDelay(jsonMessage, 0.5f));
                 }
             }
         }
 
         private IEnumerator RetryMessageAfterDelay(string jsonMessage, float delay)
         {
-            var duration = 0f;
-            while (!isWebViewReady)
-            {
-                if (duration > delay)
-                {
-                    Debug.LogWarning($"[WebViewService] Retry failed - WebView still not ready");
-                    yield break;
-                }
+            yield return new WaitForSeconds(delay);
 
-                yield return null;
-                duration += Time.deltaTime;
-            }
-            
             // Try again, but only once to avoid infinite loops
             if (webView != null && webView.gameObject.activeInHierarchy && isWebViewReady)
             {
@@ -249,7 +239,7 @@ namespace DynamicSDK.Unity.Core
             {
                 // Parse the JSON to determine message type
                 var messageObj = JsonUtility.FromJson<BaseMessageInfo>(jsonMessage);
-                
+
                 switch (messageObj.type?.ToLower())
                 {
                     case "auth":
@@ -294,7 +284,7 @@ namespace DynamicSDK.Unity.Core
                         // Use SetActive instead of Destroy
                         webView.gameObject.SetActive(false);
                         OnWebViewClosed?.Invoke();
-                        
+
                         if (config.enableDebugLogs)
                         {
                             Debug.Log("[WebViewService] WebView hidden with animation (SetActive false)");
@@ -341,7 +331,7 @@ namespace DynamicSDK.Unity.Core
             // Set frame for webview with bottom offset to display higher
             webViewRect = new Rect(0, bottomPosition, screenWidth, sheetHeight);
             webView.Frame = webViewRect;
-            
+
             if (config.enableDebugLogs)
             {
                 Debug.Log($"[WebViewService] WebView Frame: x=0, y={bottomPosition}, width={screenWidth}, height={sheetHeight}, offset={offsetHeight}");
@@ -364,7 +354,7 @@ namespace DynamicSDK.Unity.Core
             webView.OnMessageReceived += HandleMessage;
             webView.OnShouldClose += HandleShouldClose;
             webView.OnPageFinished += HandlePageFinished;
-            
+
             if (config.enableDebugLogs)
             {
                 Debug.Log("[WebViewService] WebView configured");
@@ -415,10 +405,10 @@ namespace DynamicSDK.Unity.Core
         {
             // Keep webview hidden but load the URL
             // webView.gameObject.SetActive(false);
-            
+
             // Load URL in background
             webView.Load(config.startUrl);
-            
+
             if (config.enableDebugLogs)
             {
                 Debug.Log($"[WebViewService] Pre-loading URL in background: {config.startUrl}");
@@ -430,10 +420,8 @@ namespace DynamicSDK.Unity.Core
             OnMessageReceived?.Invoke(msg);
         }
 
-        private async void HandlePageFinished(UniWebView view, int statusCode, string url)
+        private void HandlePageFinished(UniWebView view, int statusCode, string url)
         {
-            await Awaitable.WaitForSecondsAsync(0.5f);
-
             isWebViewReady = true;
             if (config.enableDebugLogs)
             {
@@ -452,4 +440,4 @@ namespace DynamicSDK.Unity.Core
             CloseWebView();
         }
     }
-} 
+}

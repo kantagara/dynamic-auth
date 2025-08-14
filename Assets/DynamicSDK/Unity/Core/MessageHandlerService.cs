@@ -17,13 +17,17 @@ namespace DynamicSDK.Unity.Core
         public System.Action<LoggedOutMessage> OnLoggedOut;
         public System.Action<HandleAuthenticatedUserMessage> OnAuthenticatedUser;
         public System.Action<JwtTokenResponseMessage> OnJwtTokenResponse;
-        
+
         public System.Action<BalanceResponseMessage> OnBalanceResponse;
+        public System.Action<BalanceResponseMessage> OnWalletSwitched;
+        public System.Action<BalanceResponseMessage> OnNetworkSwitched;
         public System.Action<SignMessageResponseMessage> OnSignMessageResponse;
         public System.Action<TransactionResponseMessage> OnTransactionResponse;
         public System.Action<WalletConnectedMessage> OnWalletConnected;
         public System.Action<WalletDisconnectedMessage> OnWalletDisconnected;
         public System.Action<WalletErrorMessage> OnWalletError;
+        public System.Action<WalletsResponseMessage> OnWalletsResponse;
+        public System.Action<NetworksResponseMessage> OnNetworksResponse;
 
         private readonly DynamicSDKConfig config;
 
@@ -51,7 +55,10 @@ namespace DynamicSDK.Unity.Core
 
             // Parse the message using the Unity message parser
             IUnityMessage parsedMessage = UnityMessageParser.ParseUniWebViewMessage(msg.RawMessage);
-
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[MessageHandlerService] Parsed message: {parsedMessage?.type} - {parsedMessage?.action}");
+            }
             if (parsedMessage == null)
             {
                 Debug.LogError($"[MessageHandlerService] Failed to parse message: {msg.RawMessage}");
@@ -132,6 +139,14 @@ namespace DynamicSDK.Unity.Core
 
             switch (message.action)
             {
+
+                case WalletActions.SWITCH_NETWORK:
+                    OnNetworkSwitched?.Invoke(message as BalanceResponseMessage);
+                    break;
+
+                case WalletActions.SWITCH_WALLET:
+                    OnWalletSwitched?.Invoke(message as BalanceResponseMessage);
+                    break;
                 case WalletActions.BALANCE_RESPONSE:
                     OnBalanceResponse?.Invoke(message as BalanceResponseMessage);
                     break;
@@ -156,6 +171,14 @@ namespace DynamicSDK.Unity.Core
                     OnWalletError?.Invoke(message as WalletErrorMessage);
                     break;
 
+                case WalletActions.WALLETS_RESPONSE:
+                    OnWalletsResponse?.Invoke(message as WalletsResponseMessage);
+                    break;
+
+                case WalletActions.NETWORKS_RESPONSE:
+                    OnNetworksResponse?.Invoke(message as NetworksResponseMessage);
+                    break;
+
                 default:
                     Debug.LogWarning($"[MessageHandlerService] Unknown wallet action: {message.action}");
                     break;
@@ -177,8 +200,6 @@ namespace DynamicSDK.Unity.Core
             {
                 data = new WalletConnectedData
                 {
-                    walletAddress = msg.Args.ContainsKey("address") ? msg.Args["address"] : "",
-                    chain = msg.Args.ContainsKey("chain") ? msg.Args["chain"] : "",
                     success = true,
                     wallet = new WalletCredential
                     {
@@ -192,4 +213,4 @@ namespace DynamicSDK.Unity.Core
             OnWalletConnected?.Invoke(walletConnectedMessage);
         }
     }
-} 
+}

@@ -16,6 +16,8 @@ namespace DynamicSDK.Unity.Messages
         public bool isVerified;
     }
 
+
+
     /// <summary>
     /// Wallet credential data structure
     /// </summary>
@@ -31,6 +33,11 @@ namespace DynamicSDK.Unity.Messages
         public string balance;
         public int decimals;
         public string symbol;
+
+        public override string ToString()
+        {
+            return $"WalletCredential {{ Address: {address}, Name: {walletName}, Chain: {chain}, Format: {format}, ID: {id}, Network: {network}, Balance: {balance}, Decimals: {decimals}, Symbol: {symbol} }}";
+        }
     }
 
     /// <summary>
@@ -43,4 +50,4 @@ namespace DynamicSDK.Unity.Messages
         public string errorCode;
         public string reason;
     }
-} 
+}

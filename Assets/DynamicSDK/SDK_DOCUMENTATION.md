@@ -1,32 +1,29 @@
 # Dynamic Unity SDK Documentation
-**Optimized for Unity 6 LTS & Unity 2022.3 LTS**
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Unity 6 Features](#unity-6-features)
-3. [Architecture](#architecture)
-4. [Installation](#installation)
-5. [Quick Start](#quick-start)
-6. [API Reference](#api-reference)
-7. [Configuration](#configuration)
-8. [Event System](#event-system)
-9. [Authentication](#authentication)
-10. [Wallet Operations](#wallet-operations)
-11. [Examples](#examples)
-12. [Best Practices](#best-practices)
-13. [Troubleshooting](#troubleshooting)
-14. [Advanced Features](#advanced-features)
+2. [Architecture](#architecture)
+3. [Installation](#installation)
+4. [Quick Start](#quick-start)
+5. [API Reference](#api-reference)
+6. [Configuration](#configuration)
+7. [Event System](#event-system)
+8. [Authentication](#authentication)
+9. [Wallet Operations](#wallet-operations)
+10. [Examples](#examples)
+11. [Best Practices](#best-practices)
+12. [Troubleshooting](#troubleshooting)
+13. [Advanced Features](#advanced-features)
 
 ---
 
 ## Overview
 
-The Dynamic Unity SDK provides seamless blockchain wallet integration for Unity applications. Fully optimized for **Unity 6 LTS** and backward compatible with Unity 2022.3 LTS, it enables developers to easily add wallet connectivity, user authentication, transaction handling, and message signing capabilities to their Unity games and applications.
+The Dynamic Unity SDK provides seamless blockchain wallet integration for Unity applications. It enables developers to easily add wallet connectivity, user authentication, transaction handling, and message signing capabilities to their Unity games and applications.
 
 ### Key Features
 
-- **🚀 Unity 6 Optimized**: Full compatibility with Unity 6 LTS architecture and features
 - **🔐 User Authentication**: Secure wallet-based authentication flow
 - **💰 Wallet Operations**: Connect, disconnect, balance checking
 - **📝 Message Signing**: Sign arbitrary messages with connected wallet
@@ -35,23 +32,12 @@ The Dynamic Unity SDK provides seamless blockchain wallet integration for Unity 
 - **⚡ Event-Driven Architecture**: React to SDK state changes via events
 - **🔧 Configurable**: Extensive configuration options for customization
 - **📱 Mobile Ready**: Optimized for mobile platforms with WebView integration
-- **🎮 Performance Optimized**: Leverages Unity 6 performance improvements
-
-### Unity 6 Compatibility
-
-| Unity Version | Compatibility Status | Notes |
-|---------------|---------------------|-------|
-| **Unity 6 LTS (6000.1+)** | ✅ **Fully Supported** | Recommended version with all features |
-| Unity 2023.3 LTS | ✅ **Fully Supported** | All features available |
-| Unity 2022.3 LTS | ✅ **Supported** | Legacy support with full functionality |
 
 ### Supported Platforms
 
-| Platform | Unity 6 | Unity 2022.3 | Optimizations |
-|----------|---------|---------------|---------------|
-| **Desktop** (Windows, macOS, Linux) | ✅ | ✅ | Enhanced performance with Unity 6 |
-| **Mobile** (iOS, Android) | ✅ | ✅ | Better battery life & memory usage |
-| **Web** (WebGL) | ⚠️ Limited | ⚠️ Limited | Basic functionality only |
+- **Desktop**: Windows, macOS, Linux
+- **Mobile**: iOS, Android
+- **Web**: WebGL (limited functionality)
 
 ### Supported Networks
 - **SUI Network**: Mainnet, Testnet, Devnet
@@ -60,61 +46,6 @@ The Dynamic Unity SDK provides seamless blockchain wallet integration for Unity 
   - Gas-efficient operations
   - Built-in multi-sig support
 
----
-
-## Unity 6 Features
-
-The Dynamic Unity SDK is fully optimized for Unity 6 LTS, taking advantage of new features and improvements:
-
-### 🎯 **Unity 6 Performance Benefits**
-
-| Feature | Unity 6 Benefit | SDK Impact |
-|---------|------------------|------------|
-| **Improved Memory Management** | Better garbage collection | Reduced memory allocations during SDK operations |
-| **Enhanced Rendering Pipeline** | More efficient UI rendering | Smoother WebView transitions and animations |
-| **Optimized Build System** | Faster build times | Quicker iteration during development |
-| **Better Mobile Performance** | Improved battery life | Longer gameplay sessions with wallet operations |
-
-### 🔧 **Unity 6 Specific Optimizations**
-
-```csharp
-// Unity 6 optimized singleton pattern
-public class DynamicSDKManager : MonoBehaviour
-{
-    // Leverages Unity 6's improved memory management
-    private static DynamicSDKManager _instance;
-    
-    // Unity 6 compatible lazy initialization
-    public static DynamicSDKManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                // Unity 6 optimized object creation
-                var go = new GameObject("DynamicSDKManager");
-                _instance = go.AddComponent<DynamicSDKManager>();
-                DontDestroyOnLoad(go);
-            }
-            return _instance;
-        }
-    }
-}
-```
-
-### 📱 **Unity 6 Mobile Improvements**
-
-- **Enhanced WebView Performance**: Better integration with Unity 6's updated WebView system
-- **Improved Touch Handling**: More responsive UI interactions
-- **Better Memory Usage**: Optimized for Unity 6's improved mobile memory management
-- **Battery Optimization**: Reduced power consumption during wallet operations
-
-### 🛠️ **Development Experience**
-
-- **Better Debugging**: Enhanced console logging compatible with Unity 6's improved console
-- **Faster Compilation**: Optimized for Unity 6's faster compilation times
-- **Hot Reload Support**: Compatible with Unity 6's improved hot reload functionality
-- **Package Manager Integration**: Seamless integration with Unity 6's updated Package Manager
 
 ---
 
@@ -202,191 +133,99 @@ DynamicSDKManager (Singleton)
 
 ### Prerequisites
 
-| Requirement | Unity 6 LTS | Unity 2022.3 LTS | Notes |
-|-------------|-------------|-------------------|--------|
-| **Unity Version** | 6000.1.7f1+ | 2022.3.0f1+ | Unity 6 recommended for best performance |
-| **UniWebView** | ✅ Included | ✅ Included | Optimized for Unity 6 |
-| **Newtonsoft JSON** | ✅ Required | ✅ Required | Latest version recommended |
-| **.NET Framework** | .NET Standard 2.1 | .NET Standard 2.1 | Unity 6 default |
+- Unity 2021.3 or later (✅ **Unity 6 Supported**)
+- UniWebView package (included)
+- Newtonsoft JSON package
 
-> **🚀 Unity 6 Recommendation**: For best performance and latest features, we recommend Unity 6 LTS (6000.1.7f1 or newer). All SDK features are fully optimized for Unity 6 architecture.
+> **Unity 6 Users**: Fully compatible with Unity 6000.1.7f1 and newer versions. All features work seamlessly with the new Unity 6 architecture.
 
-### Unity 6 Installation Guide
+### Installation Steps
 
-#### 1. **Project Setup for Unity 6**
-
-```bash
-# Create new Unity 6 project (recommended)
-Unity Hub → New Project → Unity 6 LTS → 3D/2D Template
-
-# Or upgrade existing project
-Unity Hub → Open → Select Project → Upgrade to Unity 6
-```
-
-#### 2. **Import Dynamic SDK Package**
-
-**Unity 6 Package Manager Method (Recommended)**
-```
-1. Open Unity 6 Project
-2. Window → Package Manager
-3. + → Add package from disk...
-4. Select DynamicSDK package
-```
-
-**Project Structure:**
+1. **Import the Dynamic SDK Package**
    ```
    Assets/DynamicSDK/
-├── Unity/           # Core SDK files (Unity 6 optimized)
+   ├── Unity/           # Core SDK files
    ├── Scripts/         # Main connector scripts
    ├── Config/          # Manifest configuration
    ├── Resources/       # Runtime assets
-├── Sample/          # Complete example scene
-└── Plugins/         # UniWebView (Unity 6 compatible)
-```
+   └── Samples~/        # Example implementations
+   ```
 
-#### 3. **Configure for Unity 6**
-
-**Create Manifest Configuration (Unity 6 Enhanced)**
-1. Right-click in Project window
-2. `Create → DynamicSDK → Manifest Configuration`
-3. Name: `DynamicSDKManifest`
-4. Move to: `Assets/DynamicSDK/Resources/`
-5. Configure in Inspector:
+2. **Create Manifest Configuration**
+   1. In Unity, right-click in Project window
+   2. Select `Create > DynamicSDK > Manifest Configuration`
+   3. Name it `DynamicSDKManifest`
+   4. Move to `Assets/DynamicSDK/Resources/`
+   5. Configure required fields in Inspector:
       - `environmentId`: Your Dynamic environment ID
 
-#### 4. **Install Dependencies (Unity 6 Optimized)**
+3. **Install Required Dependencies**
 
-**📦 Newtonsoft JSON (Unity 6 Method)**
-
-```csharp
-// Unity 6 Package Manager (Recommended)
-1. Window → Package Manager
-2. Packages: Unity Registry
-3. Search: "Newtonsoft Json"
-4. Install → com.unity.nuget.newtonsoft-json
-
-// Or via Package Manager manifest (Unity 6)
+   **📦 Newtonsoft JSON (Required)**
+   
+   The SDK requires Newtonsoft JSON for message serialization. Install it via Package Manager:
+   
+   **Method 1: Package Manager UI (Unity 6 & 2021.3+)**
+   1. Open `Window` → `Package Manager`
+   2. Click the `+` button in top-left
+   3. Select `Add package by name...`
+   4. Enter: `com.unity.nuget.newtonsoft-json`
+   5. Click `Add`
+   
+   > **Unity 6 Note**: Package Manager interface is slightly updated but the process remains the same.
+   
+   **Method 2: Package Manager Manifest**
+   1. Open `Packages/manifest.json`
+   2. Add to dependencies:
+   ```json
    {
      "dependencies": {
        "com.unity.nuget.newtonsoft-json": "3.2.1",
-    "com.unity.textmeshpro": "3.0.6",
-    "com.unity.ugui": "1.0.0"
+       // ... other packages
      }
    }
    ```
+   3. Unity will auto-import the package
+   
+   **Method 3: Manual Installation**
+   1. Download from [Unity Package Manager](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.2/manual/index.html)
+   2. Import via `Assets` → `Import Package` → `Custom Package`
 
-**✅ Unity 6 Verification:**
-```csharp
-// Test in Unity 6 Console
-using Newtonsoft.Json;
-using DynamicSDK.Unity.Core;
-
-[MenuItem("DynamicSDK/Test Unity 6 Compatibility")]
-public static void TestUnity6Compatibility()
-{
-    Debug.Log($"Unity Version: {Application.unityVersion}");
-    Debug.Log($"Newtonsoft JSON: {typeof(JsonConvert).Assembly.GetName().Version}");
-    Debug.Log("✅ Unity 6 compatibility verified!");
-}
-```
-
-#### 5. **Unity 6 Build Configuration**
-
-**Mobile Build Settings (Unity 6)**
+   **✅ Verify Installation:**
    ```csharp
-// Unity 6 optimized build settings
-Build Settings → Player Settings:
+   using Newtonsoft.Json; // This should work without errors
+   ```
 
-// iOS (Unity 6)
-- Target iOS Version: 12.0+
-- Architecture: ARM64
-- Scripting Backend: IL2CPP
-- Api Compatibility: .NET Standard 2.1
+   **📱 UniWebView Plugin**
+   - UniWebView is included in `Assets/Plugins/`
+   - No additional installation required
 
-// Android (Unity 6) 
-- Minimum API Level: 21 (Android 5.0)
-- Target API Level: 34+ (Unity 6 default)
-- Scripting Backend: IL2CPP
-- Api Compatibility: .NET Standard 2.1
-```
+4. **Configure Build Settings**
+   - Ensure UniWebView platform plugins are configured
+   - Set minimum iOS/Android SDK versions as required
+   - Verify Newtonsoft JSON appears in Package Manager
 
-#### 6. **Unity 6 Performance Optimization**
-
-```csharp
-// Unity 6 specific SDK configuration
-public void ConfigureForUnity6()
-{
-    var config = new DynamicSDKConfig
-    {
-        // Unity 6 optimized settings
-        enableWebViewPreload = true,        // Faster with Unity 6
-        transitionDuration = 0.25f,         // Smoother animations
-        enableDebugLogs = Application.isEditor,
-        heightRatio = 0.8f                  // Better mobile UX
-    };
-    
-    DynamicSDKManager.Instance.InitializeSDK(config);
-}
-```
-
-### Legacy Unity 2022.3 Installation
-
-For Unity 2022.3 LTS projects, follow the same steps with these considerations:
-
-| Feature | Unity 6 | Unity 2022.3 | 
-|---------|---------|---------------|
-| Package Manager | Enhanced UI | Standard UI |
-| Build Times | Faster | Standard |
-| Memory Usage | Optimized | Standard |
-| WebView Performance | Enhanced | Good |
-
-### Troubleshooting Unity 6
-
-**Common Unity 6 Issues:**
-
+5. **Verify Installation**
    ```csharp
-// Issue: Unity 6 compilation errors
-// Solution: Ensure .NET Standard 2.1 compatibility
-Player Settings → Configuration → Api Compatibility Level → .NET Standard 2.1
-
-// Issue: Package Manager not finding Newtonsoft
-// Solution: Refresh Package Manager
-Window → Package Manager → Refresh (⟳ button)
-
-// Issue: UniWebView not working in Unity 6
-// Solution: Update UniWebView plugins
-Assets/DynamicSDK/Plugins/ → Verify platform settings
-```
-
-### Verification (Unity 6)
-
-```csharp
-[MenuItem("DynamicSDK/Verify Unity 6 Installation")]
-public static void VerifyInstallation()
-{
-    // Check Unity version
-    var version = Application.unityVersion;
-    bool isUnity6 = version.StartsWith("6000.");
-    Debug.Log($"Unity Version: {version} {(isUnity6 ? "✅ Unity 6" : "⚠️ Legacy")}");
-    
-    // Check manifest
+   // Check manifest configuration
    var manifest = Resources.Load<DynamicSDKManifest>("DynamicSDKManifest");
-    Debug.Log($"Manifest: {(manifest != null ? "✅ Found" : "❌ Missing")}");
-    
-    // Check dependencies
-    try
+   if (manifest == null)
    {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(new { test = "ok" });
-        Debug.Log("Newtonsoft JSON: ✅ Working");
-   }
-    catch
-   {
-        Debug.LogError("Newtonsoft JSON: ❌ Missing");
+       Debug.LogError("DynamicSDKManifest not found in Resources folder!");
+       return;
    }
    
-    // Test SDK
+   if (!manifest.IsValid())
+   {
+       Debug.LogError("DynamicSDKManifest is missing required fields!");
+       return;
+   }
+   
+   // Test SDK initialization
    var sdk = DynamicSDKManager.Instance;
-    Debug.Log($"SDK Instance: {(sdk != null ? "✅ Ready" : "❌ Failed")}");
+   if (sdk.IsInitialized)
+   {
+       Debug.Log("Dynamic SDK installed successfully!");
    }
    ```
 
@@ -394,283 +233,109 @@ public static void VerifyInstallation()
 
 ## Quick Start
 
-### Unity 6 Quick Start (3 minutes)
+### 1. Basic Setup (5 minutes)
 
-Get your Unity 6 project running with Dynamic SDK in just 3 steps:
-
-#### Step 1: Unity 6 Project Setup
-
+1. **Create Manifest Configuration**
    ```csharp
-// 1. Create new Unity 6 project or open existing
-// 2. Import Dynamic SDK package
-// 3. Verify Unity 6 compatibility
-[MenuItem("DynamicSDK/Unity 6 Setup")]
-public static void Unity6Setup()
-{
-    var version = Application.unityVersion;
-    if (version.StartsWith("6000."))
-    {
-        Debug.Log("✅ Unity 6 detected - optimal performance available");
-    }
-    else
-    {
-        Debug.Log("⚠️ Unity 2022.3 - good compatibility, consider upgrading");
-    }
-}
-```
-
-#### Step 2: Create Manifest (Unity 6 Enhanced)
-
-```csharp
-// Right-click in Project → Create → DynamicSDK → Manifest Configuration
+   // Create via Unity menu: Create > DynamicSDK > Manifest Configuration
    // Save as: Assets/DynamicSDK/Resources/DynamicSDKManifest.asset
-// Unity 6 auto-completion will help with configuration fields
+   // Configure in Inspector:
+   //   - environmentId: Your Dynamic environment ID
    ```
 
-#### Step 3: Integration Script (Unity 6 Optimized)
-
-Create this script and attach to any GameObject:
+2. **Create Integration Script**
+   Create a script and attach it to any GameObject:
 
 ```csharp
 using UnityEngine;
 using DynamicSDK.Unity.Core;
 
-/// <summary>
-/// Unity 6 optimized Dynamic SDK integration
-/// </summary>
-public class Unity6WalletIntegration : MonoBehaviour
+public class MyWalletIntegration : MonoBehaviour
 {
-    [Header("Unity 6 Configuration")]
-    [SerializeField] private bool enableUnity6Optimizations = true;
-    
     private void Start()
     {
-        // Unity 6 optimized initialization
-        InitializeForUnity6();
-        
-        // Subscribe to events (Unity 6 compatible)
-        SubscribeToSDKEvents();
-    }
-
-    private void InitializeForUnity6()
-    {
+        // Get SDK instance - auto-initializes if needed
         var sdk = DynamicSDKManager.Instance;
         
-        // Unity 6 specific configuration
+        // Optional: Configure runtime behavior
         var config = new DynamicSDKConfig
         {
-            // Unity 6 performance optimizations
-            enableWebViewPreload = enableUnity6Optimizations,
-            transitionDuration = 0.25f,  // Smoother with Unity 6
-            heightRatio = 0.8f,
-            enableDebugLogs = Application.isEditor
+            heightRatio = 0.7f,
+            enableWebViewPreload = true
         };
-        
         sdk.InitializeSDK(config);
         
-        // Unity 6 enhanced logging
-        Debug.Log($"✅ SDK initialized for Unity {Application.unityVersion}");
-    }
-
-    private void SubscribeToSDKEvents()
-    {
-        // Core events (Unity 6 optimized event handling)
+        // Subscribe to wallet connection events
         DynamicSDKManager.OnWalletConnected += OnWalletConnected;
         DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
-        DynamicSDKManager.OnSDKError += OnSDKError;
     }
 
-    // Unity 6 UI Button Methods
+    // Call from UI button
     public void ConnectWallet()
     {
         DynamicSDKManager.Instance.ConnectWallet();
     }
 
+    // Call from UI button
     public void DisconnectWallet()
     {
         DynamicSDKManager.Instance.DisconnectWallet();
     }
 
-    // Event Handlers (Unity 6 compatible)
     private void OnWalletConnected(string address)
     {
-        Debug.Log($"🎉 Wallet connected: {address}");
-        // Update your Unity 6 UI here
+        Debug.Log($"✅ Wallet connected: {address}");
+        // Update your UI here
     }
 
     private void OnWalletDisconnected()
     {
-        Debug.Log("👋 Wallet disconnected");
-        // Update your Unity 6 UI here
+        Debug.Log("❌ Wallet disconnected");
+        // Update your UI here
     }
 
-    private void OnSDKError(string error)
-    {
-        Debug.LogError($"❌ SDK Error: {error}");
-        // Handle errors in Unity 6 UI
-    }
-
-    // Unity 6 optimized cleanup
     private void OnDestroy()
     {
-        // Prevent memory leaks (Unity 6 enhanced garbage collection)
+        // Always unsubscribe to prevent memory leaks
         DynamicSDKManager.OnWalletConnected -= OnWalletConnected;
         DynamicSDKManager.OnWalletDisconnected -= OnWalletDisconnected;
-        DynamicSDKManager.OnSDKError -= OnSDKError;
     }
 }
 ```
 
-### Unity 6 UI Integration
+### 2. UI Integration
 
-#### UI Builder (Unity 6 Recommended)
+Create buttons in your UI and link them to the script methods:
 
-```xml
-<!-- Unity 6 UI Toolkit approach -->
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:VisualElement name="wallet-container">
-        <ui:Button name="connect-btn" text="Connect Wallet" />
-        <ui:Button name="disconnect-btn" text="Disconnect" />
-        <ui:Label name="status-label" text="Not Connected" />
-    </ui:VisualElement>
-</ui:UXML>
-```
+- **Connect Button**: Calls `ConnectWallet()`
+- **Disconnect Button**: Calls `DisconnectWallet()`
+- **Status Display**: Updates based on events
 
-```csharp
-// Unity 6 UI Toolkit integration
-public class Unity6UIController : MonoBehaviour
-{
-    private Button connectButton;
-    private Button disconnectButton;
-    private Label statusLabel;
+That's it! Your game now has basic wallet integration.
 
-    private void Start()
-    {
-        var root = GetComponent<UIDocument>().rootVisualElement;
-        
-        // Unity 6 enhanced query selectors
-        connectButton = root.Q<Button>("connect-btn");
-        disconnectButton = root.Q<Button>("disconnect-btn");
-        statusLabel = root.Q<Label>("status-label");
-        
-        // Unity 6 event registration
-        connectButton.clicked += () => DynamicSDKManager.Instance.ConnectWallet();
-        disconnectButton.clicked += () => DynamicSDKManager.Instance.DisconnectWallet();
-        
-        // Subscribe to SDK events
-        DynamicSDKManager.OnWalletConnected += OnWalletConnected;
-        DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
-    }
+### 3. Verify Setup
 
-    private void OnWalletConnected(string address)
-    {
-        // Unity 6 UI updates
-        statusLabel.text = $"Connected: {address.Substring(0, 6)}...";
-        connectButton.style.display = DisplayStyle.None;
-        disconnectButton.style.display = DisplayStyle.Flex;
-    }
-
-    private void OnWalletDisconnected()
-    {
-        // Unity 6 UI updates
-        statusLabel.text = "Not Connected";
-        connectButton.style.display = DisplayStyle.Flex;
-        disconnectButton.style.display = DisplayStyle.None;
-    }
-}
-```
-
-#### Legacy uGUI (Unity 2022.3 & Unity 6)
-
+1. **Check Manifest**
    ```csharp
-// Traditional Unity UI approach (works in both Unity 6 and 2022.3)
-public class LegacyUIIntegration : MonoBehaviour
-{
-    [Header("UI References")]
-    public Button connectButton;
-    public Button disconnectButton;
-    public Text statusText;
-
-    private void Start()
-    {
-        // Button listeners
-        connectButton.onClick.AddListener(() => DynamicSDKManager.Instance.ConnectWallet());
-        disconnectButton.onClick.AddListener(() => DynamicSDKManager.Instance.DisconnectWallet());
-        
-        // SDK events
-        DynamicSDKManager.OnWalletConnected += OnWalletConnected;
-        DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
-    }
-
-    private void OnWalletConnected(string address)
+   var manifest = Resources.Load<DynamicSDKManifest>("DynamicSDKManifest");
+   if (manifest == null || !manifest.IsValid())
    {
-        statusText.text = $"Connected: {address.Substring(0, 6)}...";
-        connectButton.gameObject.SetActive(false);
-        disconnectButton.gameObject.SetActive(true);
-    }
-
-    private void OnWalletDisconnected()
-    {
-        statusText.text = "Not Connected";
-        connectButton.gameObject.SetActive(true);
-        disconnectButton.gameObject.SetActive(false);
-    }
+       Debug.LogError("Invalid or missing manifest configuration!");
+       return;
    }
    ```
 
-### Unity 6 Performance Tips
-
+2. **Test Connection**
    ```csharp
-// Unity 6 specific optimizations
-public static class Unity6Optimizations
-{
-    [MenuItem("DynamicSDK/Apply Unity 6 Optimizations")]
-    public static void ApplyOptimizations()
-    {
-        // Unity 6 player settings
-        PlayerSettings.SetApiCompatibilityLevel(
-            BuildTargetGroup.Standalone, 
-            ApiCompatibilityLevel.NET_Standard_2_1
-        );
-        
-        // Unity 6 build optimizations
-        EditorUserBuildSettings.il2CppCompilerConfiguration = Il2CppCompilerConfiguration.Release;
-        
-        Debug.Log("✅ Unity 6 optimizations applied");
-    }
-}
-```
-
-### Verification Steps
-
-1. **Unity 6 Check**
-   ```csharp
-   Debug.Log($"Unity Version: {Application.unityVersion}");
-   // Should show 6000.x.x for Unity 6
+   // Check if SDK is ready
+   if (DynamicSDKManager.Instance.IsInitialized)
+   {
+       Debug.Log("SDK initialized successfully!");
+       
+       // Test connection
+       DynamicSDKManager.Instance.CheckConnectionStatus();
+   }
    ```
-
-2. **SDK Status**
-   ```csharp
-   var sdk = DynamicSDKManager.Instance;
-   Debug.Log($"SDK Ready: {sdk.IsInitialized}");
-   ```
-
-3. **Test Connection**
-   - Click Connect button
-   - Verify WebView opens smoothly (Unity 6 enhanced performance)
-   - Check console for connection success
-
-### Unity 6 vs Unity 2022.3 Comparison
-
-| Feature | Unity 6 | Unity 2022.3 |
-|---------|---------|---------------|
-| **SDK Initialization** | ~50ms faster | Standard |
-| **WebView Performance** | Enhanced | Good |
-| **Memory Usage** | 15-20% less | Baseline |
-| **Build Time** | 30% faster | Standard |
-| **UI Responsiveness** | Improved | Good |
-
-🎉 **Congratulations!** Your Unity 6 project now has blockchain wallet integration in just 3 steps!
 
 ---
 
@@ -729,16 +394,28 @@ DynamicSDKManager.Instance.GetJwtToken();
 // Sign a message
 DynamicSDKManager.Instance.SignMessage("Hello World!");
 
-// Send a SUI transaction
+// Send a transaction
 DynamicSDKManager.Instance.SendTransaction(
     to: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-    value: "1000000000",       // 1 SUI in MIST (1 SUI = 1,000,000,000 MIST)
+    value: "1000000000",       // Value in smallest unit (e.g., MIST for SUI)
     data: "",                  // Optional transaction data
-    network: "devnet"          // SUI Network: devnet, testnet, mainnet
+    network: "mainnet"         // Network: mainnet, testnet, devnet
 );
 
 // Get wallet balance
 DynamicSDKManager.Instance.GetBalance();
+
+// Get available wallets
+DynamicSDKManager.Instance.GetWallets();
+
+// Get available networks
+DynamicSDKManager.Instance.GetNetworks();
+
+// Switch to a specific wallet
+DynamicSDKManager.Instance.SwitchWallet("walletId");
+
+// Switch to a specific network
+DynamicSDKManager.Instance.SwitchNetwork("networkChainId");
 ```
 
 #### Utility Methods
@@ -752,6 +429,12 @@ DynamicSDKManager.Instance.ResetSDK();
 
 // Enable/disable debug logging
 DynamicSDKManager.Instance.SetDebugLogging(true);
+
+// Update configuration at runtime
+DynamicSDKManager.Instance.UpdateConfiguration(newConfig);
+
+// Manually pre-load WebView in background
+DynamicSDKManager.Instance.PreloadWebView();
 
 // Update configuration at runtime
 DynamicSDKManager.Instance.UpdateConfiguration(newConfig);
@@ -903,18 +586,26 @@ The SDK uses a comprehensive event system for state management and user feedback
 
 ```csharp
 // SDK lifecycle events
-DynamicSDKManager.OnSDKInitialized    // Called when SDK is ready to use
-DynamicSDKManager.OnSDKError          // Called when any SDK error occurs
-DynamicSDKManager.OnWebViewClosed     // Called when WebView is closed
+DynamicSDKManager.OnSDKInitialized         // Called when SDK is ready to use
+DynamicSDKManager.OnSDKError               // Called when any SDK error occurs
+DynamicSDKManager.OnWebViewClosed          // Called when WebView is closed
 
-// Wallet connection events
-DynamicSDKManager.OnWalletConnected    // Called when wallet is connected, provides wallet address
-DynamicSDKManager.OnWalletDisconnected // Called when wallet is disconnected
+// Authentication & connection events
+DynamicSDKManager.OnConnectionStatusChanged // Called when connection status changes (bool)
+DynamicSDKManager.OnWalletConnected         // Called when wallet is connected (string address)
+DynamicSDKManager.OnUserAuthenticated      // Called when user is authenticated (UserInfo)
+DynamicSDKManager.OnWalletInfoUpdated      // Called when wallet info is updated (WalletCredential)
+DynamicSDKManager.OnWalletDisconnected     // Called when wallet is disconnected
+DynamicSDKManager.OnJwtTokenReceived       // Called when JWT token is received (JwtTokenResponseMessage)
 
-// Operation events
-DynamicSDKManager.OnMessageSigned      // Called when message is signed, provides signature
-DynamicSDKManager.OnTransactionSent    // Called when transaction is sent, provides transaction hash
-DynamicSDKManager.OnJwtTokenReceived   // Called when JWT token is received, provides token data
+// Wallet operation events
+DynamicSDKManager.OnTransactionSent        // Called when transaction is sent (string transactionHash)
+DynamicSDKManager.OnMessageSigned          // Called when message is signed (string signature)
+DynamicSDKManager.OnBalanceUpdated         // Called when balance is updated (BalanceResponseData)
+DynamicSDKManager.OnWalletSwitched         // Called when wallet is switched (BalanceResponseData)
+DynamicSDKManager.OnNetworkSwitched        // Called when network is switched (BalanceResponseData)
+DynamicSDKManager.OnWalletsReceived        // Called when wallets list is received (WalletsResponseData)
+DynamicSDKManager.OnNetworksReceived       // Called when networks list is received (NetworksResponseData)
 ```
 
 ### Event Usage Example
@@ -925,31 +616,69 @@ public class MySDKIntegration : MonoBehaviour
     private void Start()
     {
         // Subscribe to events
-        DynamicSDKManager.OnWalletConnected    += OnWalletConnected;
-        DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
-        DynamicSDKManager.OnSDKError           += OnSDKError;
-        DynamicSDKManager.OnMessageSigned      += OnMessageSigned;
-        DynamicSDKManager.OnTransactionSent    += OnTransactionSent;
-        DynamicSDKManager.OnJwtTokenReceived   += OnJwtTokenReceived;
-        DynamicSDKManager.OnWebViewClosed      += OnWebViewClosed;
+        DynamicSDKManager.OnSDKInitialized         += OnSDKInitialized;
+        DynamicSDKManager.OnConnectionStatusChanged += OnConnectionStatusChanged;
+        DynamicSDKManager.OnWalletConnected        += OnWalletConnected;
+        DynamicSDKManager.OnUserAuthenticated      += OnUserAuthenticated;
+        DynamicSDKManager.OnWalletInfoUpdated      += OnWalletInfoUpdated;
+        DynamicSDKManager.OnWalletDisconnected     += OnWalletDisconnected;
+        DynamicSDKManager.OnTransactionSent        += OnTransactionSent;
+        DynamicSDKManager.OnMessageSigned          += OnMessageSigned;
+        DynamicSDKManager.OnBalanceUpdated         += OnBalanceUpdated;
+        DynamicSDKManager.OnWalletSwitched         += OnWalletSwitched;
+        DynamicSDKManager.OnNetworkSwitched        += OnNetworkSwitched;
+        DynamicSDKManager.OnWalletsReceived        += OnWalletsReceived;
+        DynamicSDKManager.OnNetworksReceived       += OnNetworksReceived;
+        DynamicSDKManager.OnJwtTokenReceived       += OnJwtTokenReceived;
+        DynamicSDKManager.OnWebViewClosed          += OnWebViewClosed;
+        DynamicSDKManager.OnSDKError               += OnSDKError;
     }
 
     private void OnDestroy()
     {
         // Always unsubscribe to prevent memory leaks
-        DynamicSDKManager.OnWalletConnected    -= OnWalletConnected;
-        DynamicSDKManager.OnWalletDisconnected -= OnWalletDisconnected;
-        DynamicSDKManager.OnSDKError           -= OnSDKError;
-        DynamicSDKManager.OnMessageSigned      -= OnMessageSigned;
-        DynamicSDKManager.OnTransactionSent    -= OnTransactionSent;
-        DynamicSDKManager.OnJwtTokenReceived   -= OnJwtTokenReceived;
-        DynamicSDKManager.OnWebViewClosed      -= OnWebViewClosed;
+        DynamicSDKManager.OnSDKInitialized         -= OnSDKInitialized;
+        DynamicSDKManager.OnConnectionStatusChanged -= OnConnectionStatusChanged;
+        DynamicSDKManager.OnWalletConnected        -= OnWalletConnected;
+        DynamicSDKManager.OnUserAuthenticated      -= OnUserAuthenticated;
+        DynamicSDKManager.OnWalletInfoUpdated      -= OnWalletInfoUpdated;
+        DynamicSDKManager.OnWalletDisconnected     -= OnWalletDisconnected;
+        DynamicSDKManager.OnTransactionSent        -= OnTransactionSent;
+        DynamicSDKManager.OnMessageSigned          -= OnMessageSigned;
+        DynamicSDKManager.OnBalanceUpdated         -= OnBalanceUpdated;
+        DynamicSDKManager.OnWalletSwitched         -= OnWalletSwitched;
+        DynamicSDKManager.OnNetworkSwitched        -= OnNetworkSwitched;
+        DynamicSDKManager.OnWalletsReceived        -= OnWalletsReceived;
+        DynamicSDKManager.OnNetworksReceived       -= OnNetworksReceived;
+        DynamicSDKManager.OnJwtTokenReceived       -= OnJwtTokenReceived;
+        DynamicSDKManager.OnWebViewClosed          -= OnWebViewClosed;
+        DynamicSDKManager.OnSDKError               -= OnSDKError;
     }
 
     // Event handlers
+    private void OnSDKInitialized()
+    {
+        Debug.Log("SDK initialized successfully!");
+    }
+
+    private void OnConnectionStatusChanged(bool isConnected)
+    {
+        Debug.Log($"Connection status changed: {isConnected}");
+    }
+
     private void OnWalletConnected(string address)
     {
         Debug.Log($"Wallet connected: {address}");
+    }
+
+    private void OnUserAuthenticated(UserInfo userInfo)
+    {
+        Debug.Log($"User authenticated: {userInfo.name} ({userInfo.email})");
+    }
+
+    private void OnWalletInfoUpdated(WalletCredential walletInfo)
+    {
+        Debug.Log($"Wallet info updated: {walletInfo}");
     }
 
     private void OnWalletDisconnected()
@@ -957,9 +686,9 @@ public class MySDKIntegration : MonoBehaviour
         Debug.Log("Wallet disconnected");
     }
 
-    private void OnSDKError(string error)
+    private void OnTransactionSent(string transactionHash)
     {
-        Debug.LogError($"SDK Error: {error}");
+        Debug.Log($"Transaction sent: {transactionHash}");
     }
 
     private void OnMessageSigned(string signature)
@@ -967,14 +696,33 @@ public class MySDKIntegration : MonoBehaviour
         Debug.Log($"Message signed: {signature}");
     }
 
-    private void OnTransactionSent(string transactionHash)
+    private void OnBalanceUpdated(BalanceResponseData balance)
     {
-        Debug.Log($"Transaction sent: {transactionHash}");
+        Debug.Log($"Balance updated: {balance.balance} {balance.symbol}");
+    }
+
+    private void OnWalletSwitched(BalanceResponseData balance)
+    {
+        Debug.Log($"Wallet switched: {balance.walletAddress}");
+    }
+
+    private void OnNetworkSwitched(BalanceResponseData balance)
+    {
+        Debug.Log($"Network switched: {balance.network}");
+    }
+
+    private void OnWalletsReceived(WalletsResponseData walletsData)
+    {
+        Debug.Log($"Wallets received: {walletsData.wallets.Length} wallets");
+    }
+
+    private void OnNetworksReceived(NetworksResponseData networksData)
+    {
+        Debug.Log($"Networks received: {networksData.networks.Length} networks");
     }
 
     private void OnJwtTokenReceived(JwtTokenResponseMessage jwtToken)
     {
-        // For better UI display, truncate the token
         string token = jwtToken.data.token;
         string truncatedToken = token.Length > 20 
             ? $"{token.Substring(0, 10)}...{token.Substring(token.Length - 10)}"
@@ -985,6 +733,11 @@ public class MySDKIntegration : MonoBehaviour
     private void OnWebViewClosed()
     {
         Debug.Log("WebView closed");
+    }
+
+    private void OnSDKError(string error)
+    {
+        Debug.LogError($"SDK Error: {error}");
     }
 }
 ```

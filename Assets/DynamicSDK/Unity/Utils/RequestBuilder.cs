@@ -2,138 +2,9 @@ using Newtonsoft.Json;
 using DynamicSDK.Unity.Messages;
 using DynamicSDK.Unity.Messages.Auth;
 using DynamicSDK.Unity.Messages.Wallet;
-using System;
 
 namespace DynamicSDK.Unity.Utils
 {
-    // ============================================================================
-    // REQUEST MESSAGE CLASSES - MANAGED CODE STRIPPING SAFE
-    // ============================================================================
-
-    /// <summary>
-    /// Base request data class
-    /// </summary>
-    [Serializable]
-    public class RequestData
-    {
-        // Empty base class for requests that don't need data
-    }
-
-    /// <summary>
-    /// Generic request message class
-    /// </summary>
-    [Serializable]
-    public class RequestMessage : BaseMessage
-    {
-        public RequestData data;
-
-        public RequestMessage(string messageType, string messageAction)
-        {
-            type   = messageType;
-            action = messageAction;
-            data   = new RequestData();
-        }
-    }
-
-    /// <summary>
-    /// Sign message request data
-    /// </summary>
-    [Serializable]
-    public class SignMessageRequestData : RequestData
-    {
-        public string walletAddress;
-        public string message;
-    }
-
-    /// <summary>
-    /// Sign message request message
-    /// </summary>
-    [Serializable]
-    public class SignMessageRequestMessage : BaseMessage
-    {
-        public SignMessageRequestData data;
-
-        public SignMessageRequestMessage(string walletAddress, string message)
-        {
-            type   = "wallet";
-            action = "signMessage";
-
-            data = new SignMessageRequestData
-            {
-                walletAddress = walletAddress,
-                message       = message
-            };
-        }
-    }
-
-    /// <summary>
-    /// Transaction request data
-    /// </summary>
-    [Serializable]
-    public class TransactionRequestData : RequestData
-    {
-        public string walletAddress;
-        public string to;
-        public string value;
-        public string chain;
-        public string network;
-    }
-
-    /// <summary>
-    /// Transaction request message
-    /// </summary>
-    [Serializable]
-    public class TransactionRequestMessage : BaseMessage
-    {
-        public TransactionRequestData data;
-
-        public TransactionRequestMessage(string walletAddress, string toAddress, string amount, string chain, string network)
-        {
-            type   = "wallet";
-            action = "transaction";
-
-            data = new TransactionRequestData
-            {
-                walletAddress = walletAddress,
-                to            = toAddress.Trim(),
-                value         = amount.Trim(),
-                chain         = chain,
-                network       = network
-            };
-        }
-    }
-
-    /// <summary>
-    /// Get balance request data
-    /// </summary>
-    [Serializable]
-    public class GetBalanceRequestData : RequestData
-    {
-        public string walletAddress;
-        public string chain;
-    }
-
-    /// <summary>
-    /// Get balance request message
-    /// </summary>
-    [Serializable]
-    public class GetBalanceRequestMessage : BaseMessage
-    {
-        public GetBalanceRequestData data;
-
-        public GetBalanceRequestMessage(string walletAddress, string chain)
-        {
-            type   = "wallet";
-            action = "getBalance";
-
-            data = new GetBalanceRequestData
-            {
-                walletAddress = walletAddress,
-                chain         = chain
-            };
-        }
-    }
-
     /// <summary>
     /// Utility class for building request messages
     /// </summary>
@@ -144,7 +15,13 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildConnectWalletRequest()
         {
-            var message = new RequestMessage("auth", "connectWallet");
+            var message = new
+            {
+                type = "auth",
+                action = "connectWallet",
+                data = new { }, // no data needed
+                requestId = System.Guid.NewGuid().ToString()
+            };
 
             return JsonConvert.SerializeObject(message);
         }
@@ -154,7 +31,13 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildDisconnectRequest()
         {
-            var message = new RequestMessage("auth", "disconnect");
+            var message = new
+            {
+                type = "auth",
+                action = "disconnect",
+                data = new { },
+                requestId = System.Guid.NewGuid().ToString()
+            };
 
             return JsonConvert.SerializeObject(message);
         }
@@ -164,9 +47,19 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildSignMessageRequest(string walletAddress, string message)
         {
-            var requestMessage = new SignMessageRequestMessage(walletAddress, message);
+            var json = new
+            {
+                type = "wallet",
+                action = "signMessage",
+                data = new
+                {
+                    walletAddress = walletAddress,
+                    message = message
+                },
+                requestId = System.Guid.NewGuid().ToString()
+            };
 
-            return JsonConvert.SerializeObject(requestMessage);
+            return JsonConvert.SerializeObject(json);
         }
 
         /// <summary>
@@ -174,19 +67,67 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildTransactionRequest(string walletAddress, string toAddress, string amount, string chain = "sui", string network = "mainnet")
         {
-            var message = new TransactionRequestMessage(walletAddress, toAddress, amount, chain, network);
+            var transactionRequest = new
+            {
+                type = "wallet",
+                action = "transaction",
+                data = new
+                {
+                    walletAddress = walletAddress,
+                    to = toAddress.Trim(),
+                    value = amount.Trim(),
+                    chain = chain,
+                    network = network
+                },
+                requestId = System.Guid.NewGuid().ToString()
+            };
 
-            return JsonConvert.SerializeObject(message);
+            return JsonConvert.SerializeObject(transactionRequest);
         }
 
         /// <summary>
         /// Build get balance request
         /// </summary>
-        public static string BuildGetBalanceRequest(string walletAddress, string chain = "sui")
+        public static string BuildGetBalanceRequest()
         {
-            var message = new GetBalanceRequestMessage(walletAddress, chain);
+            var balanceRequest = new
+            {
+                type = "wallet",
+                action = "getBalance",
+                requestId = System.Guid.NewGuid().ToString()
+            };
 
-            return JsonConvert.SerializeObject(message);
+            return JsonConvert.SerializeObject(balanceRequest);
+        }
+
+        /// <summary>
+        /// Build get wallets request
+        /// </summary>
+        public static string BuildGetWalletsRequest()
+        {
+            var walletsRequest = new
+            {
+                type = "wallet",
+                action = "getWallets",
+                requestId = System.Guid.NewGuid().ToString()
+            };
+
+            return JsonConvert.SerializeObject(walletsRequest);
+        }
+
+        /// <summary>
+        /// Build get networks request
+        /// </summary>
+        public static string BuildGetNetworksRequest()
+        {
+            var networksRequest = new
+            {
+                type = "wallet",
+                action = "getNetworks",
+                requestId = System.Guid.NewGuid().ToString()
+            };
+
+            return JsonConvert.SerializeObject(networksRequest);
         }
 
         /// <summary>
@@ -194,10 +135,18 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildOpenProfileRequest(string walletAddress)
         {
-            var message = new DynamicSDK.Unity.Messages.Auth.OpenProfileMessage();
-            message.data = new DynamicSDK.Unity.Messages.Auth.OpenProfileData { walletAddress = walletAddress };
+            var openProfileRequest = new
+            {
+                type = "auth",
+                action = "openProfile",
+                data = new
+                {
+                    walletAddress = walletAddress
+                },
+                requestId = System.Guid.NewGuid().ToString()
+            };
 
-            return JsonConvert.SerializeObject(message);
+            return JsonConvert.SerializeObject(openProfileRequest);
         }
 
         /// <summary>
@@ -205,23 +154,73 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildGetJwtTokenRequest()
         {
-            var message = new GetJwtTokenMessage();
+            var jwtTokenRequest = new
+            {
+                type = "auth",
+                action = "getJwtToken",
+                data = new { }, // no data needed
+                requestId = System.Guid.NewGuid().ToString()
+            };
 
-            return JsonConvert.SerializeObject(message);
+            return JsonConvert.SerializeObject(jwtTokenRequest);
         }
 
         /// <summary>
-        /// Input validation helpers
+        /// Build switch wallet request
+        /// </summary>
+        public static string BuildSwitchWalletRequest(string walletId)
+        {
+            var switchWalletRequest = new
+            {
+                type = "wallet",
+                action = "switchWallet",
+                data = new
+                {
+                    walletId = walletId
+                },
+                requestId = System.Guid.NewGuid().ToString()
+            };
+
+            return JsonConvert.SerializeObject(switchWalletRequest);
+        }
+
+        /// <summary>
+        /// Build switch network request
+        /// </summary>
+        public static string BuildSwitchNetworkRequest(string networkChainId)
+        {
+            var switchNetworkRequest = new
+            {
+                type = "wallet",
+                action = "switchNetwork",
+                data = new
+                {
+                    networkChainId = networkChainId
+                },
+                requestId = System.Guid.NewGuid().ToString()
+            };
+
+            return JsonConvert.SerializeObject(switchNetworkRequest);
+        }
+
+        /// <summary>
+        /// Validate required parameters for requests
         /// </summary>
         public static class Validator
         {
-            public static bool IsValidAddress(string address) { return !string.IsNullOrEmpty(address) && address.Length >= 32; }
+            public static bool IsValidAddress(string address)
+            {
+                return !string.IsNullOrEmpty(address) && address.Length >= 66; // 32 bytes (64 chars) + "0x" prefix
+            }
 
-            public static bool IsValidAmount(string amount) { return decimal.TryParse(amount, out decimal result) && result > 0; }
+            public static bool IsValidAmount(string amount)
+            {
+                return !string.IsNullOrEmpty(amount) &&
+                       decimal.TryParse(amount, out decimal value) &&
+                       value > 0;
+            }
 
             public static bool IsValidMessage(string message) { return !string.IsNullOrEmpty(message); }
-
-            public static bool IsValidChain(string chain) { return !string.IsNullOrEmpty(chain); }
         }
     }
 }

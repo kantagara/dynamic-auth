@@ -19,7 +19,7 @@ namespace DynamicSDK.Unity.Parser
         // URL SCHEME CONSTANTS
         // ============================================================================
 
-        private const string AUTH_SCHEME   = "uniwebview://auth";
+        private const string AUTH_SCHEME = "uniwebview://auth";
         private const string WALLET_SCHEME = "uniwebview://wallet";
         private const string MESSAGE_PARAM = "message";
 
@@ -104,8 +104,16 @@ namespace DynamicSDK.Unity.Parser
                         return ParseAuthMessage(jsonMessage, baseMessage.action);
 
                     case "wallet":
-                        return ParseWalletMessage(jsonMessage, baseMessage.action);
-
+                        var wallet = ParseWalletMessage(jsonMessage, baseMessage.action);
+                        if (wallet == null)
+                        {
+                            Debug.LogError($"[UnityMessageParser] Failed to parse wallet message for action: {baseMessage.action}");
+                        }
+                        else
+                        {
+                            Debug.Log($"[UnityMessageParser] Successfully parsed wallet message: {wallet.GetType().Name}");
+                        }
+                        return wallet;
                     default:
                         Debug.LogError($"[UnityMessageParser] Unknown message type: {baseMessage.type}");
 
@@ -171,7 +179,10 @@ namespace DynamicSDK.Unity.Parser
                 {
                     case WalletActions.BALANCE_RESPONSE:
                         return JsonUtility.FromJson<BalanceResponseMessage>(jsonMessage);
-
+                    case WalletActions.SWITCH_WALLET:
+                        return JsonUtility.FromJson<BalanceResponseMessage>(jsonMessage);
+                    case WalletActions.SWITCH_NETWORK:
+                        return JsonUtility.FromJson<BalanceResponseMessage>(jsonMessage);
                     case WalletActions.SIGN_MESSAGE_RESPONSE:
                         return JsonUtility.FromJson<SignMessageResponseMessage>(jsonMessage);
 
@@ -179,13 +190,30 @@ namespace DynamicSDK.Unity.Parser
                         return JsonUtility.FromJson<TransactionResponseMessage>(jsonMessage);
 
                     case WalletActions.WALLET_CONNECTED:
-                        return JsonUtility.FromJson<WalletConnectedMessage>(jsonMessage);
+                        var wallet2 = JsonUtility.FromJson<WalletConnectedMessage>(jsonMessage);
+                        if (wallet2 == null)
+                        {
+                            Debug.LogError("[UnityMessageParser] Failed to parse WalletConnectedMessage");
+
+                            return null;
+                        }
+                        else
+                        {
+                            Debug.Log($"[UnityMessageParser] Successfully parsed WalletConnectedMessage: {wallet2.data}");
+                        }
+                        return wallet2;
 
                     case WalletActions.WALLET_DISCONNECTED:
                         return JsonUtility.FromJson<WalletDisconnectedMessage>(jsonMessage);
 
                     case WalletActions.WALLET_ERROR:
                         return JsonUtility.FromJson<WalletErrorMessage>(jsonMessage);
+
+                    case WalletActions.WALLETS_RESPONSE:
+                        return JsonUtility.FromJson<WalletsResponseMessage>(jsonMessage);
+
+                    case WalletActions.NETWORKS_RESPONSE:
+                        return JsonUtility.FromJson<NetworksResponseMessage>(jsonMessage);
 
                     default:
                         Debug.LogError($"[UnityMessageParser] Unknown wallet action: {action}");
@@ -215,7 +243,7 @@ namespace DynamicSDK.Unity.Parser
             try
             {
                 // Parse URL to get query parameters
-                var uri             = new Uri(url);
+                var uri = new Uri(url);
                 var queryParameters = ParseQueryString(uri.Query);
 
                 if (!queryParameters.ContainsKey(MESSAGE_PARAM))
@@ -265,7 +293,7 @@ namespace DynamicSDK.Unity.Parser
 
                 if (keyValue.Length == 2)
                 {
-                    string key   = Uri.UnescapeDataString(keyValue[0]);
+                    string key = Uri.UnescapeDataString(keyValue[0]);
                     string value = Uri.UnescapeDataString(keyValue[1]);
                     result[key] = value;
                 }
@@ -335,7 +363,7 @@ namespace DynamicSDK.Unity.Parser
         {
             public string type;
             public string action;
-            public long   timestamp;
+            public long timestamp;
             public string requestId;
         }
     }
@@ -418,6 +446,26 @@ namespace DynamicSDK.Unity.Parser
 
             return message as WalletErrorMessage;
         }
+
+        /// <summary>
+        /// Parse as Wallets Response
+        /// </summary>
+        public static WalletsResponseMessage ParseAsWalletsResponse(string url)
+        {
+            var message = UnityMessageParser.ParseUniWebViewMessage(url);
+
+            return message as WalletsResponseMessage;
+        }
+
+        /// <summary>
+        /// Parse as Networks Response
+        /// </summary>
+        public static NetworksResponseMessage ParseAsNetworksResponse(string url)
+        {
+            var message = UnityMessageParser.ParseUniWebViewMessage(url);
+
+            return message as NetworksResponseMessage;
+        }
     }
 
     // ============================================================================
@@ -430,7 +478,7 @@ namespace DynamicSDK.Unity.Parser
     public class UnityMessageHandler : MonoBehaviour
     {
         [Header("Debug Settings")] public bool enableDebugLogs = true;
-        public                            bool logRawMessages  = false;
+        public bool logRawMessages = false;
 
         /// <summary>
         /// Event fired when a message is successfully parsed

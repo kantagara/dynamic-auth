@@ -11,6 +11,7 @@ public class SampleScript : MonoBehaviour
 
     [SerializeField] private TMP_InputField recipientAddressInput;
     [SerializeField] private TMP_InputField transactionAmountInput;
+    [SerializeField] private TMP_Dropdown chainDropdown;
 
     [Header("Button"), Space(10)]
     [SerializeField] private Button connectButton;
@@ -42,13 +43,13 @@ public class SampleScript : MonoBehaviour
 
     private void SubscribeToEvents()
     {
-        DynamicSDKManager.OnWalletConnected    += OnWalletConnected;
+        DynamicSDKManager.OnWalletConnected += OnWalletConnected;
         DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
-        DynamicSDKManager.OnJwtTokenReceived   += OnJwtTokenReceived;
-        DynamicSDKManager.OnTransactionSent    += OnTransactionSent;
-        DynamicSDKManager.OnMessageSigned      += OnMessageSigned;
-        DynamicSDKManager.OnSDKError           += OnSDKError;
-        DynamicSDKManager.OnWebViewClosed      += OnWebViewClosed;
+        DynamicSDKManager.OnJwtTokenReceived += OnJwtTokenReceived;
+        DynamicSDKManager.OnTransactionSent += OnTransactionSent;
+        DynamicSDKManager.OnMessageSigned += OnMessageSigned;
+        DynamicSDKManager.OnSDKError += OnSDKError;
+        DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
     }
 
     private void SubcribeButtons()
@@ -66,6 +67,7 @@ public class SampleScript : MonoBehaviour
     private void OnWalletConnected(string walletAddress)
     {
         Debug.Log($"[SampleScript] Wallet connected: {walletAddress}");
+        Debug.Log($"[SampleScript] Chain Selected: {GetSelectedNetwork()}");
         UpdateButtonInteractability();
         walletAddressText.text = "Wallet Connected: " + walletAddress;
         UpdateStatusText("Wallet connected");
@@ -108,11 +110,9 @@ public class SampleScript : MonoBehaviour
         Debug.Log($"[SampleScript] JWT token received: {jwtToken}");
         UpdateButtonInteractability();
         string token = jwtToken.data.token;
-
         string truncatedToken = token.Length > 20
             ? $"{token.Substring(0, 10)}...{token.Substring(token.Length - 10)}"
             : token;
-
         jwtTokenText.text = "JWT Token: " + truncatedToken;
         UpdateStatusText("JWT token received");
     }
@@ -130,7 +130,7 @@ public class SampleScript : MonoBehaviour
     private void OnConnectButtonClicked()
     {
         Debug.Log("[SampleScript] Connect button clicked");
-
+        Debug.Log($"[SampleScript] Chain Selected: {GetSelectedNetwork()}");
         if (sdk == null)
         {
             Debug.LogError("[SampleScript] SDK Manager not available!");
@@ -205,9 +205,9 @@ public class SampleScript : MonoBehaviour
             return;
         }
 
-        string recipientAddress  = GetRecipientAddress();
+        string recipientAddress = GetRecipientAddress();
         string transactionAmount = GetTransactionAmount();
-        string selectedNetwork   = "testnet"; //replace with your desired network
+        string selectedNetwork = "testnet"; //replace with your desired network
 
         // Validate inputs
         if (string.IsNullOrEmpty(recipientAddress))
@@ -301,8 +301,8 @@ public class SampleScript : MonoBehaviour
 
     #region Input field getters
 
-    private string GetRecipientAddress()  { return recipientAddressInput != null ? recipientAddressInput.text.Trim() : string.Empty; }
-    private string GetMessageToSign()     { return messageToSignInput != null ? messageToSignInput.text.Trim() : string.Empty; }
+    private string GetRecipientAddress() { return recipientAddressInput != null ? recipientAddressInput.text.Trim() : string.Empty; }
+    private string GetMessageToSign() { return messageToSignInput != null ? messageToSignInput.text.Trim() : string.Empty; }
     private string GetTransactionAmount() { return transactionAmountInput != null ? transactionAmountInput.text.Trim() : string.Empty; }
 
     #endregion
@@ -314,25 +314,32 @@ public class SampleScript : MonoBehaviour
         //check if the wallet is connected
         if (sdk != null && sdk.IsWalletConnected)
         {
-            connectButton.interactable         = false;
-            disconnectButton.interactable      = true;
-            signButton.interactable            = true;
+            connectButton.interactable = false;
+            disconnectButton.interactable = true;
+            signButton.interactable = true;
             sendTransactionButton.interactable = true;
-            getJWTButton.interactable          = true;
-            openProfileButton.interactable     = true;
+            getJWTButton.interactable = true;
+            openProfileButton.interactable = true;
         }
         else
         {
-            connectButton.interactable         = true;
-            disconnectButton.interactable      = false;
-            signButton.interactable            = false;
+            connectButton.interactable = true;
+            disconnectButton.interactable = false;
+            signButton.interactable = false;
             sendTransactionButton.interactable = false;
-            getJWTButton.interactable          = false;
-            openProfileButton.interactable     = false;
+            getJWTButton.interactable = false;
+            openProfileButton.interactable = false;
         }
     }
 
     private void UpdateStatusText(string text) { statusText.text = text; }
+    private string GetSelectedNetwork()
+    {
+        if (chainDropdown == null)
+            return "SUI"; // fallback
 
+        string selected = chainDropdown.options[chainDropdown.value].text;
+        return selected;
+    }
     #endregion
 }
