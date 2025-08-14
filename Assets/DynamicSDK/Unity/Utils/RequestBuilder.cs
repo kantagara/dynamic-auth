@@ -6,7 +6,96 @@ using DynamicSDK.Unity.Messages.Wallet;
 namespace DynamicSDK.Unity.Utils
 {
     /// <summary>
-    /// Utility class for building request messages
+    /// Base request model to prevent stripping issues
+    /// </summary>
+    [System.Serializable]
+    public class StripSafeBaseRequest
+    {
+        [JsonProperty("type")]
+        public string type;
+        
+        [JsonProperty("action")]
+        public string action;
+        
+        [JsonProperty("requestId")]
+        public string requestId;
+    }
+
+    /// <summary>
+    /// Authentication request model
+    /// </summary>
+    [System.Serializable]
+    public class StripSafeAuthRequest : StripSafeBaseRequest
+    {
+        [JsonProperty("data")]
+        public object data;
+    }
+
+    /// <summary>
+    /// Wallet request model
+    /// </summary>
+    [System.Serializable]
+    public class StripSafeWalletRequest : StripSafeBaseRequest
+    {
+        [JsonProperty("data")]
+        public object data;
+    }
+
+    /// <summary>
+    /// Data models for specific requests
+    /// </summary>
+    [System.Serializable]
+    public class StripSafeSignMessageData
+    {
+        [JsonProperty("walletAddress")]
+        public string walletAddress;
+        
+        [JsonProperty("message")]
+        public string message;
+    }
+
+    [System.Serializable]
+    public class StripSafeTransactionData
+    {
+        [JsonProperty("walletAddress")]
+        public string walletAddress;
+        
+        [JsonProperty("to")]
+        public string to;
+        
+        [JsonProperty("value")]
+        public string value;
+        
+        [JsonProperty("chain")]
+        public string chain;
+        
+        [JsonProperty("network")]
+        public string network;
+    }
+
+    [System.Serializable]
+    public class StripSafeOpenProfileData
+    {
+        [JsonProperty("walletAddress")]
+        public string walletAddress;
+    }
+
+    [System.Serializable]
+    public class StripSafeSwitchWalletData
+    {
+        [JsonProperty("walletId")]
+        public string walletId;
+    }
+
+    [System.Serializable]
+    public class StripSafeSwitchNetworkData
+    {
+        [JsonProperty("networkChainId")]
+        public string networkChainId;
+    }
+
+    /// <summary>
+    /// Utility class for building request messages with stripping-safe models
     /// </summary>
     public static class RequestBuilder
     {
@@ -15,11 +104,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildConnectWalletRequest()
         {
-            var message = new
+            var message = new StripSafeAuthRequest
             {
                 type = "auth",
                 action = "connectWallet",
-                data = new { }, // no data needed
+                data = new object(), // no data needed
                 requestId = System.Guid.NewGuid().ToString()
             };
 
@@ -31,11 +120,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildDisconnectRequest()
         {
-            var message = new
+            var message = new StripSafeAuthRequest
             {
                 type = "auth",
                 action = "disconnect",
-                data = new { },
+                data = new object(),
                 requestId = System.Guid.NewGuid().ToString()
             };
 
@@ -47,11 +136,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildSignMessageRequest(string walletAddress, string message)
         {
-            var json = new
+            var json = new StripSafeWalletRequest
             {
                 type = "wallet",
                 action = "signMessage",
-                data = new
+                data = new StripSafeSignMessageData
                 {
                     walletAddress = walletAddress,
                     message = message
@@ -67,11 +156,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildTransactionRequest(string walletAddress, string toAddress, string amount, string chain = "sui", string network = "mainnet")
         {
-            var transactionRequest = new
+            var transactionRequest = new StripSafeWalletRequest
             {
                 type = "wallet",
                 action = "transaction",
-                data = new
+                data = new StripSafeTransactionData
                 {
                     walletAddress = walletAddress,
                     to = toAddress.Trim(),
@@ -90,10 +179,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildGetBalanceRequest()
         {
-            var balanceRequest = new
+            var balanceRequest = new StripSafeWalletRequest
             {
                 type = "wallet",
                 action = "getBalance",
+                data = null,
                 requestId = System.Guid.NewGuid().ToString()
             };
 
@@ -105,10 +195,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildGetWalletsRequest()
         {
-            var walletsRequest = new
+            var walletsRequest = new StripSafeWalletRequest
             {
                 type = "wallet",
                 action = "getWallets",
+                data = null,
                 requestId = System.Guid.NewGuid().ToString()
             };
 
@@ -120,10 +211,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildGetNetworksRequest()
         {
-            var networksRequest = new
+            var networksRequest = new StripSafeWalletRequest
             {
                 type = "wallet",
                 action = "getNetworks",
+                data = null,
                 requestId = System.Guid.NewGuid().ToString()
             };
 
@@ -135,11 +227,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildOpenProfileRequest(string walletAddress)
         {
-            var openProfileRequest = new
+            var openProfileRequest = new StripSafeAuthRequest
             {
                 type = "auth",
                 action = "openProfile",
-                data = new
+                data = new StripSafeOpenProfileData
                 {
                     walletAddress = walletAddress
                 },
@@ -154,11 +246,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildGetJwtTokenRequest()
         {
-            var jwtTokenRequest = new
+            var jwtTokenRequest = new StripSafeAuthRequest
             {
                 type = "auth",
                 action = "getJwtToken",
-                data = new { }, // no data needed
+                data = new object(), // no data needed
                 requestId = System.Guid.NewGuid().ToString()
             };
 
@@ -170,11 +262,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildSwitchWalletRequest(string walletId)
         {
-            var switchWalletRequest = new
+            var switchWalletRequest = new StripSafeWalletRequest
             {
                 type = "wallet",
                 action = "switchWallet",
-                data = new
+                data = new StripSafeSwitchWalletData
                 {
                     walletId = walletId
                 },
@@ -189,11 +281,11 @@ namespace DynamicSDK.Unity.Utils
         /// </summary>
         public static string BuildSwitchNetworkRequest(string networkChainId)
         {
-            var switchNetworkRequest = new
+            var switchNetworkRequest = new StripSafeWalletRequest
             {
                 type = "wallet",
                 action = "switchNetwork",
-                data = new
+                data = new StripSafeSwitchNetworkData
                 {
                     networkChainId = networkChainId
                 },

@@ -40,12 +40,12 @@ The Dynamic Unity SDK provides seamless blockchain wallet integration for Unity 
 - **Web**: WebGL (limited functionality)
 
 ### Supported Networks
+
 - **SUI Network**: Mainnet, Testnet, Devnet
   - Native SUI token transactions
   - Object-based transaction model
   - Gas-efficient operations
   - Built-in multi-sig support
-
 
 ---
 
@@ -55,21 +55,21 @@ The Dynamic Unity SDK is specifically designed for the **SUI blockchain network*
 
 ### 🌐 **SUI Network Features**
 
-| Feature | Description | Game Developer Benefit |
-|---------|-------------|----------------------|
-| **Object-Centric Model** | Assets are objects, not account balances | Easy NFT and item management |
-| **Parallel Execution** | Transactions can run in parallel | Higher throughput for games |
-| **Move Programming** | Secure, resource-oriented language | Safe smart contract interactions |
-| **Low Gas Costs** | Efficient transaction processing | Cost-effective for frequent transactions |
-| **Instant Finality** | Transactions confirm immediately | Better user experience |
+| Feature                  | Description                              | Game Developer Benefit                   |
+| ------------------------ | ---------------------------------------- | ---------------------------------------- |
+| **Object-Centric Model** | Assets are objects, not account balances | Easy NFT and item management             |
+| **Parallel Execution**   | Transactions can run in parallel         | Higher throughput for games              |
+| **Move Programming**     | Secure, resource-oriented language       | Safe smart contract interactions         |
+| **Low Gas Costs**        | Efficient transaction processing         | Cost-effective for frequent transactions |
+| **Instant Finality**     | Transactions confirm immediately         | Better user experience                   |
 
 ### 🏗️ **SUI Network Types**
 
-| Network | Purpose | Gas Costs | Use Case |
-|---------|---------|-----------|----------|
-| **Devnet** | Development & Testing | Free/Very Low | Game development & testing |
+| Network     | Purpose                | Gas Costs     | Use Case                    |
+| ----------- | ---------------------- | ------------- | --------------------------- |
+| **Devnet**  | Development & Testing  | Free/Very Low | Game development & testing  |
 | **Testnet** | Pre-production Testing | Free/Very Low | Final testing before launch |
-| **Mainnet** | Production | Real costs | Live games and applications |
+| **Mainnet** | Production             | Real costs    | Live games and applications |
 
 ### 💰 **SUI Token & Gas**
 
@@ -142,6 +142,7 @@ DynamicSDKManager (Singleton)
 ### Installation Steps
 
 1. **Import the Dynamic SDK Package**
+
    ```
    Assets/DynamicSDK/
    ├── Unity/           # Core SDK files
@@ -152,6 +153,7 @@ DynamicSDKManager (Singleton)
    ```
 
 2. **Create Manifest Configuration**
+
    1. In Unity, right-click in Project window
    2. Select `Create > DynamicSDK > Manifest Configuration`
    3. Name it `DynamicSDKManifest`
@@ -162,50 +164,59 @@ DynamicSDKManager (Singleton)
 3. **Install Required Dependencies**
 
    **📦 Newtonsoft JSON (Required)**
-   
+
    The SDK requires Newtonsoft JSON for message serialization. Install it via Package Manager:
-   
+
    **Method 1: Package Manager UI (Unity 6 & 2021.3+)**
+
    1. Open `Window` → `Package Manager`
    2. Click the `+` button in top-left
    3. Select `Add package by name...`
    4. Enter: `com.unity.nuget.newtonsoft-json`
    5. Click `Add`
-   
+
    > **Unity 6 Note**: Package Manager interface is slightly updated but the process remains the same.
-   
+
    **Method 2: Package Manager Manifest**
+
    1. Open `Packages/manifest.json`
    2. Add to dependencies:
+
    ```json
    {
      "dependencies": {
-       "com.unity.nuget.newtonsoft-json": "3.2.1",
+       "com.unity.nuget.newtonsoft-json": "3.2.1"
        // ... other packages
      }
    }
    ```
+
    3. Unity will auto-import the package
-   
+
    **Method 3: Manual Installation**
+
    1. Download from [Unity Package Manager](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.2/manual/index.html)
    2. Import via `Assets` → `Import Package` → `Custom Package`
 
    **✅ Verify Installation:**
+
    ```csharp
    using Newtonsoft.Json; // This should work without errors
    ```
 
    **📱 UniWebView Plugin**
+
    - UniWebView is included in `Assets/Plugins/`
    - No additional installation required
 
 4. **Configure Build Settings**
+
    - Ensure UniWebView platform plugins are configured
    - Set minimum iOS/Android SDK versions as required
    - Verify Newtonsoft JSON appears in Package Manager
 
 5. **Verify Installation**
+
    ```csharp
    // Check manifest configuration
    var manifest = Resources.Load<DynamicSDKManifest>("DynamicSDKManifest");
@@ -214,13 +225,13 @@ DynamicSDKManager (Singleton)
        Debug.LogError("DynamicSDKManifest not found in Resources folder!");
        return;
    }
-   
+
    if (!manifest.IsValid())
    {
        Debug.LogError("DynamicSDKManifest is missing required fields!");
        return;
    }
-   
+
    // Test SDK initialization
    var sdk = DynamicSDKManager.Instance;
    if (sdk.IsInitialized)
@@ -236,6 +247,7 @@ DynamicSDKManager (Singleton)
 ### 1. Basic Setup (5 minutes)
 
 1. **Create Manifest Configuration**
+
    ```csharp
    // Create via Unity menu: Create > DynamicSDK > Manifest Configuration
    // Save as: Assets/DynamicSDK/Resources/DynamicSDKManifest.asset
@@ -256,7 +268,7 @@ public class MyWalletIntegration : MonoBehaviour
     {
         // Get SDK instance - auto-initializes if needed
         var sdk = DynamicSDKManager.Instance;
-        
+
         // Optional: Configure runtime behavior
         var config = new DynamicSDKConfig
         {
@@ -264,7 +276,7 @@ public class MyWalletIntegration : MonoBehaviour
             enableWebViewPreload = true
         };
         sdk.InitializeSDK(config);
-        
+
         // Subscribe to wallet connection events
         DynamicSDKManager.OnWalletConnected += OnWalletConnected;
         DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
@@ -316,6 +328,7 @@ That's it! Your game now has basic wallet integration.
 ### 3. Verify Setup
 
 1. **Check Manifest**
+
    ```csharp
    var manifest = Resources.Load<DynamicSDKManifest>("DynamicSDKManifest");
    if (manifest == null || !manifest.IsValid())
@@ -331,7 +344,7 @@ That's it! Your game now has basic wallet integration.
    if (DynamicSDKManager.Instance.IsInitialized)
    {
        Debug.Log("SDK initialized successfully!");
-       
+
        // Test connection
        DynamicSDKManager.Instance.CheckConnectionStatus();
    }
@@ -347,15 +360,15 @@ The main entry point for all SDK functionality.
 
 #### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `Instance` | `DynamicSDKManager` | Singleton instance (static) |
-| `IsInitialized` | `bool` | Whether SDK is initialized and ready |
-| `IsWalletConnected` | `bool` | Whether a wallet is currently connected |
-| `CurrentWalletAddress` | `string` | Currently connected wallet address |
-| `CurrentUserInfo` | `UserInfo` | Current authenticated user information |
-| `CurrentWalletInfo` | `WalletCredential` | Current wallet credential details |
-| `Config` | `DynamicSDKConfig` | Access to SDK configuration |
+| Property               | Type                | Description                             |
+| ---------------------- | ------------------- | --------------------------------------- |
+| `Instance`             | `DynamicSDKManager` | Singleton instance (static)             |
+| `IsInitialized`        | `bool`              | Whether SDK is initialized and ready    |
+| `IsWalletConnected`    | `bool`              | Whether a wallet is currently connected |
+| `CurrentWalletAddress` | `string`            | Currently connected wallet address      |
+| `CurrentUserInfo`      | `UserInfo`          | Current authenticated user information  |
+| `CurrentWalletInfo`    | `WalletCredential`  | Current wallet credential details       |
+| `Config`               | `DynamicSDKConfig`  | Access to SDK configuration             |
 
 #### Initialization Methods
 
@@ -445,6 +458,7 @@ DynamicSDKManager.Instance.UpdateConfiguration(newConfig);
 ## Configuration
 
 The SDK configuration is now split into two parts:
+
 1. **DynamicSDKManifest**: Core platform configuration via ScriptableObject
 2. **DynamicSDKConfig**: Runtime SDK behavior configuration
 
@@ -469,6 +483,7 @@ public class DynamicSDKManifest : ScriptableObject
 ```
 
 To create a manifest configuration:
+
 1. Right-click in Project window
 2. Select `Create > DynamicSDK > Manifest Configuration`
 3. Configure the settings in the Inspector
@@ -508,29 +523,29 @@ public class DynamicSDKConfig
 
 #### Manifest Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `platform` | "browser" | Platform type for WebView integration |
-| `clientVersion` | "1" | Client version identifier |
-| `environmentId` | "" | Environment ID for Dynamic services |
-| `appOrigin` | "appOrigin.com" | App origin domain |
-| `apiBaseUrl` | "" | API base URL for Dynamic services |
-| `appLogoUrl` | "" | URL for app logo |
-| `appName` | "" | Application name |
-| `cssOverrides` | "" | CSS overrides for WebView styling |
+| Setting         | Default         | Description                           |
+| --------------- | --------------- | ------------------------------------- |
+| `platform`      | "browser"       | Platform type for WebView integration |
+| `clientVersion` | "1"             | Client version identifier             |
+| `environmentId` | ""              | Environment ID for Dynamic services   |
+| `appOrigin`     | "appOrigin.com" | App origin domain                     |
+| `apiBaseUrl`    | ""              | API base URL for Dynamic services     |
+| `appLogoUrl`    | ""              | URL for app logo                      |
+| `appName`       | ""              | Application name                      |
+| `cssOverrides`  | ""              | CSS overrides for WebView styling     |
 
 #### Runtime Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `startUrl` | Dynamic hosted URL | URL of the Dynamic authentication interface |
-| `heightRatio` | 0.6f | WebView height as ratio of screen height |
-| `bottomOffset` | 0f | Offset from bottom of screen |
-| `transitionDuration` | 0.35f | Animation duration for WebView transitions |
-| `enableClickOutsideToClose` | true | Allow closing WebView by clicking outside |
-| `enableWebViewPreload` | true | Pre-load WebView for faster first open |
-| `enableDebugLogs` | true | Enable detailed debug logging |
-| `maxRetryAttempts` | 3 | Maximum retry attempts for failed operations |
+| Setting                     | Default            | Description                                  |
+| --------------------------- | ------------------ | -------------------------------------------- |
+| `startUrl`                  | Dynamic hosted URL | URL of the Dynamic authentication interface  |
+| `heightRatio`               | 0.6f               | WebView height as ratio of screen height     |
+| `bottomOffset`              | 0f                 | Offset from bottom of screen                 |
+| `transitionDuration`        | 0.35f              | Animation duration for WebView transitions   |
+| `enableClickOutsideToClose` | true               | Allow closing WebView by clicking outside    |
+| `enableWebViewPreload`      | true               | Pre-load WebView for faster first open       |
+| `enableDebugLogs`           | true               | Enable detailed debug logging                |
+| `maxRetryAttempts`          | 3                  | Maximum retry attempts for failed operations |
 
 ### Configuration Example
 
@@ -546,10 +561,10 @@ public class MySDKConfig : MonoBehaviour
             enableClickOutsideToClose = false,
             enableDebugLogs = Application.isEditor
         };
-        
+
         // Initialize SDK with config
         DynamicSDKManager.Instance.InitializeSDK(config);
-        
+
         // The manifest configuration will be automatically loaded
         // from Assets/DynamicSDK/Resources/DynamicSDKManifest.asset
     }
@@ -574,6 +589,7 @@ else
 ```
 
 Required fields for valid configuration:
+
 - `environmentId`
 
 ---
@@ -724,7 +740,7 @@ public class MySDKIntegration : MonoBehaviour
     private void OnJwtTokenReceived(JwtTokenResponseMessage jwtToken)
     {
         string token = jwtToken.data.token;
-        string truncatedToken = token.Length > 20 
+        string truncatedToken = token.Length > 20
             ? $"{token.Substring(0, 10)}...{token.Substring(token.Length - 10)}"
             : token;
         Debug.Log($"JWT Token received: {truncatedToken}");
@@ -755,14 +771,18 @@ public class MySDKIntegration : MonoBehaviour
 The SDK includes a complete sample implementation demonstrating all core functionality. You can find it in the `Assets/DynamicSDK/Sample/` directory.
 
 ### Sample Scene
+
 The sample scene (`SampleScene.unity`) includes:
+
 - Complete UI setup for wallet operations
 - Status display for all operations
 - Input fields for transaction and message signing
 - Visual feedback for all SDK operations
 
 ### Sample Script
+
 The sample script (`SampleScript.cs`) demonstrates:
+
 - Proper SDK initialization
 - Event handling
 - UI state management
@@ -807,12 +827,14 @@ public class SampleScript : MonoBehaviour
 ```
 
 ### Using the Sample
+
 1. Open the sample scene from `Assets/DynamicSDK/Sample/SampleScene.unity`
 2. Ensure your `DynamicSDKManifest` is configured
 3. Play the scene to test all SDK functionality
 4. Use the sample as a reference for your own implementation
 
 ### Sample Features
+
 - ✅ Wallet Connection/Disconnection
 - ✅ Message Signing
 - ✅ Transaction Sending
@@ -825,6 +847,7 @@ public class SampleScript : MonoBehaviour
 ### Data Structures
 
 #### UserInfo
+
 ```csharp
 public class UserInfo
 {
@@ -837,6 +860,7 @@ public class UserInfo
 ```
 
 #### WalletCredential
+
 ```csharp
 public class WalletCredential
 {
@@ -925,7 +949,7 @@ public void SendGameReward(string playerAddress, float rewardAmount)
 {
     // Convert to MIST (SUI's smallest unit: 1 SUI = 1,000,000,000 MIST)
     string valueInMist = (rewardAmount * 1e9f).ToString("F0");
-    
+
     DynamicSDKManager.Instance.SendTransaction(
         to: playerAddress,
         value: valueInMist,
@@ -945,7 +969,7 @@ private void OnTransactionSent(string transactionHash)
 private void OnWalletError(string error)
 {
     Debug.LogError($"Transaction failed: {error}");
-    
+
     // Handle specific errors
     if (error.Contains("insufficient funds"))
     {
@@ -987,7 +1011,7 @@ public void RequestJwtToken()
 {
     // Subscribe to JWT token event
     DynamicSDKManager.OnJwtTokenReceived += OnJwtTokenReceived;
-    
+
     // Request JWT token
     DynamicSDKManager.Instance.GetJwtToken();
 }
@@ -1007,10 +1031,10 @@ private void OnJwtTokenReceived(JwtTokenResponseMessage response)
     long timestamp = response.data.timestamp;
 
     Debug.Log($"JWT Token received for user {userId} ({email})");
-    
+
     // Send to your backend for verification
     SendTokenToBackend(jwtToken);
-    
+
     // Store for future API calls
     StoreAuthToken(jwtToken);
 }
@@ -1024,16 +1048,16 @@ private void SendTokenToBackend(string token)
 private IEnumerator AuthenticateWithBackend(string jwtToken)
 {
     var request = new UnityWebRequest("https://your-game-api.com/auth/verify", "POST");
-    
+
     var bodyData = new { token = jwtToken };
     var bodyRaw = Encoding.UTF8.GetBytes(JsonUtility.ToJson(bodyData));
-    
+
     request.uploadHandler = new UploadHandlerRaw(bodyRaw);
     request.downloadHandler = new DownloadHandlerBuffer();
     request.SetRequestHeader("Content-Type", "application/json");
-    
+
     yield return request.SendWebRequest();
-    
+
     if (request.result == UnityWebRequest.Result.Success)
     {
         Debug.Log("Backend authentication successful");
@@ -1053,6 +1077,7 @@ private void OnDestroy()
 ```
 
 **JWT Token Use Cases:**
+
 - **Backend Authentication**: Verify user identity on your game server
 - **API Authorization**: Include JWT in API requests for protected endpoints
 - **Session Management**: Use JWT for maintaining user sessions
@@ -1078,10 +1103,10 @@ public class GameWalletManager : MonoBehaviour
     public Text statusText;
     public Text balanceText;
     public Text userNameText;
-    
+
     [Header("Game Settings")]
     public float dailyRewardAmount = 0.001f; // SUI
-    
+
     private DynamicSDKManager sdk;
     private bool hasReceivedDailyReward;
 
@@ -1098,7 +1123,7 @@ public class GameWalletManager : MonoBehaviour
         connectButton.onClick.AddListener(ConnectWallet);
         disconnectButton.onClick.AddListener(DisconnectWallet);
         rewardButton.onClick.AddListener(ClaimDailyReward);
-        
+
         UpdateUI();
     }
 
@@ -1133,14 +1158,14 @@ public class GameWalletManager : MonoBehaviour
         if (!hasReceivedDailyReward && sdk.IsWalletConnected)
         {
             string rewardInMist = (dailyRewardAmount * 1e9f).ToString("F0");
-            
+
             sdk.SendTransaction(
                 to: sdk.CurrentWalletAddress,
                 value: rewardInMist,
                 data: "",
                 network: "devnet" // SUI network
             );
-            
+
             statusText.text = "Sending daily reward...";
         }
     }
@@ -1187,7 +1212,7 @@ public class GameWalletManager : MonoBehaviour
     private void UpdateUI()
     {
         bool isConnected = sdk.IsWalletConnected;
-        
+
         connectButton.gameObject.SetActive(!isConnected);
         disconnectButton.gameObject.SetActive(isConnected);
         rewardButton.gameObject.SetActive(isConnected && !hasReceivedDailyReward);
@@ -1199,9 +1224,9 @@ public class GameWalletManager : MonoBehaviour
         // This is just an example
         string lastRewardDate = PlayerPrefs.GetString("LastRewardDate", "");
         string today = System.DateTime.Now.ToString("yyyy-MM-dd");
-        
+
         hasReceivedDailyReward = (lastRewardDate == today);
-        
+
         if (hasReceivedDailyReward)
         {
             statusText.text = "Daily reward already claimed!";
@@ -1228,6 +1253,7 @@ public class GameWalletManager : MonoBehaviour
 ### 1. Event Management
 
 **✅ Always Unsubscribe from Events**
+
 ```csharp
 private void OnDestroy()
 {
@@ -1238,15 +1264,16 @@ private void OnDestroy()
 ```
 
 **✅ Handle All Event Cases**
+
 ```csharp
 private void OnWalletConnected(string address)
 {
     // Update UI
     UpdateConnectionStatus(true);
-    
+
     // Load user data
     LoadUserDataFromBlockchain(address);
-    
+
     // Enable wallet-dependent features
     EnablePremiumFeatures();
 }
@@ -1255,12 +1282,13 @@ private void OnWalletConnected(string address)
 ### 2. Error Handling
 
 **✅ Implement Comprehensive Error Handling**
+
 ```csharp
 private void OnWalletError(string error)
 {
     // Log for debugging
     Debug.LogError($"Wallet error: {error}");
-    
+
     // Handle specific error cases
     switch (error.ToLower())
     {
@@ -1283,6 +1311,7 @@ private void OnWalletError(string error)
 ### 3. Security Best Practices
 
 **✅ Validate All Input**
+
 ```csharp
 public void SendTransaction(string toAddress, float amount)
 {
@@ -1292,14 +1321,14 @@ public void SendTransaction(string toAddress, float amount)
         ShowError("Invalid recipient address");
         return;
     }
-    
+
     // Validate amount
     if (amount <= 0 || amount > maxTransactionAmount)
     {
         ShowError("Invalid transaction amount");
         return;
     }
-    
+
     // Proceed with transaction
     string valueInWei = (amount * 1e18f).ToString("F0");
     DynamicSDKManager.Instance.SendTransaction(toAddress, valueInWei);
@@ -1307,6 +1336,7 @@ public void SendTransaction(string toAddress, float amount)
 ```
 
 **✅ Never Store Private Keys**
+
 ```csharp
 // ❌ NEVER DO THIS
 // string privateKey = "0x123..."; // Never store private keys
@@ -1326,6 +1356,7 @@ string walletAddress = DynamicSDKManager.Instance.CurrentWalletAddress;
 **Problem**: `DynamicSDKManager.Instance` returns null or SDK doesn't initialize.
 
 **Solutions**:
+
 ```csharp
 // Check if application is quitting
 if (DynamicSDKManager.Instance == null)
@@ -1346,9 +1377,11 @@ if (!DynamicSDKManager.Instance.IsInitialized)
 **Problem**: Connect wallet button doesn't show authentication interface.
 
 **Solutions**:
+
 1. Check UniWebView permissions on mobile platforms
 2. Verify network connectivity
 3. Check configuration URL
+
 ```csharp
 // Debug configuration
 var config = DynamicSDKManager.Instance.Config;
@@ -1361,10 +1394,12 @@ Debug.Log($"Height Ratio: {config.heightRatio}");
 **Problem**: Compilation errors about missing Newtonsoft.Json
 
 **Error Messages**:
+
 - `The type or namespace name 'Newtonsoft' could not be found`
 - `JsonConvert does not exist in the current context`
 
 **Solutions**:
+
 ```csharp
 // 1. Install via Package Manager
 Window → Package Manager → + → Add package by name...
@@ -1386,13 +1421,14 @@ using Newtonsoft.Json;
 **Problem**: Event handlers not being called.
 
 **Solutions**:
+
 ```csharp
 // Subscribe before SDK operations
 private void Start()
 {
     // Subscribe FIRST
     DynamicSDKManager.OnWalletConnected += OnWalletConnected;
-    
+
     // Then initialize
     DynamicSDKManager.Instance.InitializeSDK();
 }
@@ -1410,9 +1446,9 @@ private void EnableDebugMode()
         enableDebugLogs = true,
         logRawMessages = true
     };
-    
+
     DynamicSDKManager.Instance.InitializeSDK(config);
-    
+
     // Enable Unity console logs
     Debug.developerConsoleVisible = true;
 }
@@ -1424,27 +1460,27 @@ The SDK uses standardized error codes for consistent error handling:
 
 #### 🔐 **Authentication Error Codes**
 
-| Error Code | Description | Common Cause | Solution |
-|------------|-------------|--------------|----------|
-| `AUTH_USER_REJECTED` | User cancelled authentication | User closed auth dialog | Retry with clear instructions |
-| `NETWORK_ERROR` | Network connection failed | Internet connectivity issues | Check network connection |
-| `INVALID_EMAIL_DOMAIN` | Email domain not allowed | Restricted email domain | Use allowed email domain |
-| `SESSION_EXPIRED` | Authentication session expired | Session timeout | Re-authenticate user |
+| Error Code             | Description                    | Common Cause                 | Solution                      |
+| ---------------------- | ------------------------------ | ---------------------------- | ----------------------------- |
+| `AUTH_USER_REJECTED`   | User cancelled authentication  | User closed auth dialog      | Retry with clear instructions |
+| `NETWORK_ERROR`        | Network connection failed      | Internet connectivity issues | Check network connection      |
+| `INVALID_EMAIL_DOMAIN` | Email domain not allowed       | Restricted email domain      | Use allowed email domain      |
+| `SESSION_EXPIRED`      | Authentication session expired | Session timeout              | Re-authenticate user          |
 
 #### 💰 **Wallet Error Codes**
 
-| Error Code | Description | Common Cause | Solution |
-|------------|-------------|--------------|----------|
-| `WALLET_NOT_CONNECTED` | No wallet connected | Operation on disconnected wallet | Connect wallet first |
-| `USER_REJECTED` | User rejected transaction | User cancelled in wallet | Retry with clear explanation |
-| `INSUFFICIENT_FUNDS` | Not enough balance | Insufficient SUI balance | Add funds to wallet |
-| `INVALID_ADDRESS` | Invalid recipient address | Wrong address format | Validate SUI address format |
-| `INVALID_CHAIN` | Unsupported blockchain | Wrong network specified | Use 'sui' as chain parameter |
-| `TRANSACTION_FAILED` | Transaction execution failed | Various blockchain issues | Check transaction details |
-| `GAS_BUDGET_ERROR` | Gas budget issues | Insufficient gas or gas limit | Adjust gas budget |
-| `SIGNATURE_FAILED` | Message signing failed | Wallet signature error | Retry signing operation |
-| `OBJECT_NOT_FOUND` | SUI object not found | Invalid object reference | Verify object existence |
-| `INVALID_TRANSACTION_DATA` | Invalid transaction data | Malformed transaction | Validate transaction parameters |
+| Error Code                 | Description                  | Common Cause                     | Solution                        |
+| -------------------------- | ---------------------------- | -------------------------------- | ------------------------------- |
+| `WALLET_NOT_CONNECTED`     | No wallet connected          | Operation on disconnected wallet | Connect wallet first            |
+| `USER_REJECTED`            | User rejected transaction    | User cancelled in wallet         | Retry with clear explanation    |
+| `INSUFFICIENT_FUNDS`       | Not enough balance           | Insufficient SUI balance         | Add funds to wallet             |
+| `INVALID_ADDRESS`          | Invalid recipient address    | Wrong address format             | Validate SUI address format     |
+| `INVALID_CHAIN`            | Unsupported blockchain       | Wrong network specified          | Use 'sui' as chain parameter    |
+| `TRANSACTION_FAILED`       | Transaction execution failed | Various blockchain issues        | Check transaction details       |
+| `GAS_BUDGET_ERROR`         | Gas budget issues            | Insufficient gas or gas limit    | Adjust gas budget               |
+| `SIGNATURE_FAILED`         | Message signing failed       | Wallet signature error           | Retry signing operation         |
+| `OBJECT_NOT_FOUND`         | SUI object not found         | Invalid object reference         | Verify object existence         |
+| `INVALID_TRANSACTION_DATA` | Invalid transaction data     | Malformed transaction            | Validate transaction parameters |
 
 #### 🛠️ **Error Handling Best Practices**
 
@@ -1490,20 +1526,21 @@ private void ShowGasBudgetError()
 #### 🌐 **Network Connection Issues**
 
 **Problem**: Cannot connect to SUI network
+
 ```csharp
 // Check SUI network connectivity
 private void ValidateSuiNetwork()
 {
     var config = DynamicSDKManager.Instance.Config;
     Debug.Log($"Current network configuration: {config.startUrl}");
-    
+
     // Verify network is reachable
     if (Application.internetReachability == NetworkReachability.NotReachable)
     {
         Debug.LogError("No internet connection available");
         return;
     }
-    
+
     // Test SUI RPC endpoint
     StartCoroutine(TestSuiRPCConnection());
 }
@@ -1514,7 +1551,7 @@ private IEnumerator TestSuiRPCConnection()
     using (UnityWebRequest request = UnityWebRequest.Get("https://fullnode.devnet.sui.io"))
     {
         yield return request.SendWebRequest();
-        
+
         if (request.result == UnityWebRequest.Result.Success)
         {
             Debug.Log("SUI network connection successful");
@@ -1530,18 +1567,19 @@ private IEnumerator TestSuiRPCConnection()
 #### 💰 **Transaction Issues**
 
 **Problem**: Transactions failing with gas errors
+
 ```csharp
 // Helper for gas budget calculation
 public class SuiGasHelper
 {
     public static readonly long DEFAULT_GAS_BUDGET = 10000000; // 0.01 SUI
     public static readonly long MAX_GAS_BUDGET = 50000000;    // 0.05 SUI
-    
+
     public static bool IsValidGasBudget(long gasBudget)
     {
         return gasBudget >= DEFAULT_GAS_BUDGET && gasBudget <= MAX_GAS_BUDGET;
     }
-    
+
     public static string FormatGasBudget(long gasBudget)
     {
         return (gasBudget / 1e9).ToString("F3") + " SUI";
@@ -1553,15 +1591,15 @@ private void SendTransactionWithGasHandling(string to, string value)
 {
     // Validate gas budget
     long gasBudget = SuiGasHelper.DEFAULT_GAS_BUDGET;
-    
+
     if (!SuiGasHelper.IsValidGasBudget(gasBudget))
     {
         Debug.LogError($"Invalid gas budget: {gasBudget}");
         return;
     }
-    
+
     Debug.Log($"Sending transaction with gas budget: {SuiGasHelper.FormatGasBudget(gasBudget)}");
-    
+
     DynamicSDKManager.Instance.SendTransaction(to, value, "", "devnet");
 }
 ```
@@ -1569,6 +1607,7 @@ private void SendTransactionWithGasHandling(string to, string value)
 #### 🔍 **Address Validation**
 
 **Problem**: Invalid SUI address format
+
 ```csharp
 public static class SuiAddressValidator
 {
@@ -1580,21 +1619,21 @@ public static class SuiAddressValidator
             Debug.LogError("Address cannot be null or empty");
             return false;
         }
-        
+
         // Check prefix
         if (!address.StartsWith("0x"))
         {
             Debug.LogError("SUI address must start with '0x'");
             return false;
         }
-        
+
         // Check length (66 characters: 0x + 64 hex characters)
         if (address.Length != 66)
         {
             Debug.LogError($"SUI address must be 66 characters long, got {address.Length}");
             return false;
         }
-        
+
         // Check hex format
         string hexPart = address.Substring(2);
         if (!IsValidHex(hexPart))
@@ -1602,15 +1641,15 @@ public static class SuiAddressValidator
             Debug.LogError("Invalid hex characters in SUI address");
             return false;
         }
-        
+
         return true;
     }
-    
+
     private static bool IsValidHex(string hex)
     {
         return System.Text.RegularExpressions.Regex.IsMatch(hex, @"^[0-9a-fA-F]+$");
     }
-    
+
     // Generate example address for testing
     public static string GenerateExampleAddress()
     {
@@ -1627,7 +1666,7 @@ private void SendTransactionWithValidation(string recipientAddress, float amount
         OnWalletError?.Invoke("Invalid SUI address format");
         return;
     }
-    
+
     // Continue with transaction...
     string valueInMist = (amount * 1e9f).ToString("F0");
     DynamicSDKManager.Instance.SendTransaction(recipientAddress, valueInMist, "", "devnet");
@@ -1637,6 +1676,7 @@ private void SendTransactionWithValidation(string recipientAddress, float amount
 #### 📱 **Mobile Platform Issues**
 
 **Problem**: WebView not working on mobile
+
 ```csharp
 // Mobile-specific WebView debugging
 public class MobileWebViewDebugger
@@ -1644,11 +1684,11 @@ public class MobileWebViewDebugger
     public static void DiagnoseMobileWebView()
     {
         Debug.Log("=== Mobile WebView Diagnostics ===");
-        
+
         // Check platform
         Debug.Log($"Platform: {Application.platform}");
         Debug.Log($"Is Mobile: {Application.isMobilePlatform}");
-        
+
         // Check permissions
         #if UNITY_ANDROID
         Debug.Log("Android platform detected");
@@ -1657,7 +1697,7 @@ public class MobileWebViewDebugger
         Debug.Log("iOS platform detected");
         Debug.Log("Required: NSAppTransportSecurity settings");
         #endif
-        
+
         // Check WebView availability
         if (Application.platform == RuntimePlatform.Android)
         {
@@ -1667,7 +1707,7 @@ public class MobileWebViewDebugger
         {
             Debug.Log("iOS WKWebView should be available");
         }
-        
+
         // Check UniWebView plugin
         Debug.Log("UniWebView plugin status: " + (UniWebView.IsInitialized ? "Ready" : "Not initialized"));
     }
@@ -1677,18 +1717,21 @@ public class MobileWebViewDebugger
 ### Unity 6 Specific Notes
 
 **✅ What works perfectly in Unity 6:**
-- All SDK functionality 
+
+- All SDK functionality
 - Package Manager integration
 - WebView rendering
 - Event system
 - Cross-scene persistence
 
 **📝 Unity 6 Considerations:**
+
 - Package Manager UI is refreshed but functionality is identical
 - Build settings remain the same
 - No breaking changes from Unity 2022.3 LTS
 
 **🔧 Unity 6 Optimizations:**
+
 ```csharp
 // Unity 6 benefits from improved garbage collection
 private void OptimizeForUnity6()
@@ -1709,62 +1752,64 @@ private void OptimizeForUnity6()
 ### 🚀 **SUI Network Performance Tips**
 
 #### 1. **Transaction Batching**
+
 ```csharp
 // Batch multiple operations for better performance
 public class SuiTransactionBatcher
 {
     private List<TransactionRequest> pendingTransactions = new List<TransactionRequest>();
     private const int MAX_BATCH_SIZE = 10;
-    
+
     public void QueueTransaction(string to, string value, string network = "devnet")
     {
         pendingTransactions.Add(new TransactionRequest { To = to, Value = value, Network = network });
-        
+
         if (pendingTransactions.Count >= MAX_BATCH_SIZE)
         {
             ProcessBatch();
         }
     }
-    
+
     private void ProcessBatch()
     {
         Debug.Log($"Processing batch of {pendingTransactions.Count} transactions");
-        
+
         foreach (var tx in pendingTransactions)
         {
             DynamicSDKManager.Instance.SendTransaction(tx.To, tx.Value, "", tx.Network);
         }
-        
+
         pendingTransactions.Clear();
     }
 }
 ```
 
 #### 2. **Object Caching**
+
 ```csharp
 // Cache SUI objects for better performance
 public class SuiObjectCache
 {
     private Dictionary<string, WalletCredential> cachedObjects = new Dictionary<string, WalletCredential>();
     private const float CACHE_TIMEOUT = 30f; // 30 seconds
-    
+
     public void CacheWalletInfo(string address, WalletCredential info)
     {
         cachedObjects[address] = info;
-        
+
         // Auto-clear cache after timeout
         StartCoroutine(ClearCacheAfterTimeout(address));
     }
-    
+
     public WalletCredential GetCachedWalletInfo(string address)
     {
         return cachedObjects.ContainsKey(address) ? cachedObjects[address] : null;
     }
-    
+
     private IEnumerator ClearCacheAfterTimeout(string address)
     {
         yield return new WaitForSeconds(CACHE_TIMEOUT);
-        
+
         if (cachedObjects.ContainsKey(address))
         {
             cachedObjects.Remove(address);
@@ -1775,6 +1820,7 @@ public class SuiObjectCache
 ```
 
 #### 3. **Gas Optimization**
+
 ```csharp
 // Optimize gas usage for SUI transactions
 public class SuiGasOptimizer
@@ -1790,7 +1836,7 @@ public class SuiGasOptimizer
             _ => 1000000L
         };
     }
-    
+
     public static bool IsGasEfficient(long gasBudget, TransactionType type)
     {
         long optimal = CalculateOptimalGasBudget(type);
@@ -1802,6 +1848,7 @@ public class SuiGasOptimizer
 ### 🔒 **Security Best Practices**
 
 #### 1. **Input Validation**
+
 ```csharp
 public class SuiSecurityValidator
 {
@@ -1813,36 +1860,36 @@ public class SuiSecurityValidator
             Debug.LogError("Invalid recipient address");
             return false;
         }
-        
+
         // Validate amount
         if (!decimal.TryParse(value, out decimal amount) || amount <= 0)
         {
             Debug.LogError("Invalid transaction amount");
             return false;
         }
-        
+
         // Validate network
         if (!IsValidSuiNetwork(network))
         {
             Debug.LogError("Invalid SUI network");
             return false;
         }
-        
+
         // Check for suspicious patterns
         if (IsSuspiciousTransaction(to, amount))
         {
             Debug.LogWarning("Suspicious transaction detected");
             return false;
         }
-        
+
         return true;
     }
-    
+
     private static bool IsValidSuiNetwork(string network)
     {
         return new[] { "devnet", "testnet", "mainnet" }.Contains(network.ToLower());
     }
-    
+
     private static bool IsSuspiciousTransaction(string to, decimal amount)
     {
         // Check for known suspicious patterns
@@ -1850,41 +1897,42 @@ public class SuiSecurityValidator
         {
             return true;
         }
-        
+
         if (to.EndsWith("000000000000000000000000000000000000000000000000000000000000"))
         {
             return true; // Suspicious address pattern
         }
-        
+
         return false;
     }
 }
 ```
 
 #### 2. **Session Management**
+
 ```csharp
 public class SuiSessionManager
 {
     private static string sessionToken;
     private static DateTime sessionExpiry;
     private const int SESSION_TIMEOUT_MINUTES = 30;
-    
+
     public static bool IsSessionValid()
     {
         return !string.IsNullOrEmpty(sessionToken) && DateTime.UtcNow < sessionExpiry;
     }
-    
+
     public static void RefreshSession()
     {
         if (DynamicSDKManager.Instance.IsWalletConnected)
         {
             sessionToken = System.Guid.NewGuid().ToString();
             sessionExpiry = DateTime.UtcNow.AddMinutes(SESSION_TIMEOUT_MINUTES);
-            
+
             Debug.Log($"Session refreshed, expires at: {sessionExpiry}");
         }
     }
-    
+
     public static void InvalidateSession()
     {
         sessionToken = null;
@@ -1897,6 +1945,7 @@ public class SuiSessionManager
 ### 📊 **Monitoring & Analytics**
 
 #### 1. **Transaction Monitoring**
+
 ```csharp
 public class SuiTransactionMonitor
 {
@@ -1910,13 +1959,13 @@ public class SuiTransactionMonitor
             timestamp = DateTime.UtcNow,
             network = "sui"
         };
-        
+
         Debug.Log($"Transaction tracked: {JsonConvert.SerializeObject(transactionData)}");
-        
+
         // Send to analytics service
         SendToAnalytics("sui_transaction", transactionData);
     }
-    
+
     private static void SendToAnalytics(string eventName, object data)
     {
         // Implement your analytics integration here
@@ -1926,29 +1975,30 @@ public class SuiTransactionMonitor
 ```
 
 #### 2. **Performance Metrics**
+
 ```csharp
 public class SuiPerformanceMetrics
 {
     private static Dictionary<string, float> operationTimes = new Dictionary<string, float>();
-    
+
     public static void StartOperation(string operationName)
     {
         operationTimes[operationName] = Time.realtimeSinceStartup;
     }
-    
+
     public static void EndOperation(string operationName)
     {
         if (operationTimes.ContainsKey(operationName))
         {
             float duration = Time.realtimeSinceStartup - operationTimes[operationName];
             Debug.Log($"Operation '{operationName}' took {duration:F2} seconds");
-            
+
             // Track performance metrics
             if (duration > 5f) // Slow operation threshold
             {
                 Debug.LogWarning($"Slow operation detected: {operationName} took {duration:F2}s");
             }
-            
+
             operationTimes.Remove(operationName);
         }
     }
@@ -1970,24 +2020,24 @@ public class AdvancedSDKSetup : MonoBehaviour
         {
             // Custom branding
             startUrl = "https://your-branded-dynamic-app.com",
-            
+
             // Performance optimizations
             enableWebViewPreload = true,
             transitionDuration = 0.2f,
-            
+
             // User experience
             enableClickOutsideToClose = false, // Force explicit interaction
             heightRatio = 0.9f, // Near fullscreen
-            
+
             // Development settings
             enableDebugLogs = Application.isEditor,
             logRawMessages = Application.isEditor && Debug.isDebugBuild,
-            
+
             // Retry logic
             maxRetryAttempts = 5,
             retryDelay = 2.0f
         };
-        
+
         DynamicSDKManager.Instance.InitializeSDK(config);
     }
 }
@@ -2005,18 +2055,18 @@ public class SDKAnalytics : MonoBehaviour
         DynamicSDKManager.OnTransactionSent += TrackTransaction;
         DynamicSDKManager.OnWalletError += TrackError;
     }
-    
+
     private void TrackWalletConnection(string address)
     {
         // Send to your analytics service
         Debug.Log($"Analytics: Wallet connected - {address}");
     }
-    
+
     private void TrackTransaction(string txHash)
     {
         Debug.Log($"Analytics: Transaction sent - {txHash}");
     }
-    
+
     private void TrackError(string error)
     {
         Debug.Log($"Analytics: SDK error - {error}");
@@ -2029,15 +2079,18 @@ public class SDKAnalytics : MonoBehaviour
 ## Support and Resources
 
 ### Documentation Links
+
 - [Dynamic Labs Official Documentation](https://docs.dynamic.xyz/)
 - [UniWebView Documentation](https://uniwebview.com/)
 - [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui.html)
 
 ### Community
+
 - [Dynamic Labs Discord](https://discord.gg/dynamic)
 - [Unity Forums](https://forum.unity.com/)
 
 ### License
+
 This SDK is provided under the MIT License. See license file for details.
 
 ---
@@ -2049,6 +2102,7 @@ This SDK is provided under the MIT License. See license file for details.
 ### 🆕 **What's New in v1.1.1**
 
 #### ✅ **Major Improvements**
+
 - **🔧 New Configuration System**: Split into DynamicSDKManifest and DynamicSDKConfig
 - **📚 Enhanced Platform Settings**: ScriptableObject-based manifest configuration
 - **🎨 Improved UI Customization**: CSS overrides and app branding options
@@ -2057,6 +2111,7 @@ This SDK is provided under the MIT License. See license file for details.
 - **🛠️ Unity 6 Support**: Full compatibility with Unity 6000.1.7f1+
 
 #### ✅ **Critical Updates**
+
 - Added manifest-based configuration for platform settings
 - Improved WebView URL handling with manifest parameters
 - Enhanced error handling for configuration validation
@@ -2065,6 +2120,7 @@ This SDK is provided under the MIT License. See license file for details.
 - Improved mobile platform compatibility
 
 #### ✅ **New Features**
+
 - ScriptableObject manifest configuration
 - CSS override support for WebView styling
 - App branding customization options
@@ -2073,11 +2129,13 @@ This SDK is provided under the MIT License. See license file for details.
 - Enhanced debugging capabilities
 
 ### Unity Version Support
+
 - ✅ **Unity 6000.1.7f1**: Fully tested and supported
-- ✅ **Unity 2022.3 LTS**: Fully supported  
+- ✅ **Unity 2022.3 LTS**: Fully supported
 - ✅ **Unity 2021.3 LTS**: Minimum supported version
 
 ### 🎯 **Developer Experience Improvements**
+
 - **95% Accuracy**: Improved configuration validation
 - **90% Completeness**: Comprehensive manifest system
 - **85% Usability**: Streamlined setup process
