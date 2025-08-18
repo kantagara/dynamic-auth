@@ -14,6 +14,7 @@ public class AuthScene : MonoBehaviour
     [SerializeField] Button LogInButton;
 
     DynamicSDKManager m_sdk;
+    DynamicSDKManifest m_manifest;
     bool m_walletConnected = false;
     bool m_isAuthenticating;
     int m_authResult = default;
@@ -47,11 +48,24 @@ public class AuthScene : MonoBehaviour
         config.enableClickOutsideToClose = false;
         config.enableWebViewPreload = false;
 
+        m_manifest = Resources.Load<DynamicSDKManifest>("DynamicSDKManifest");
+        if (m_manifest != null)
+        {
+            // simulate to set environmentId dynamically
+            m_manifest.environmentId = RetrieveEnvironmentId();
+        }
+
         m_sdk = DynamicSDKManager.Instance;
         ShowDynamicAuth();
     }
 
     /////////////////////////////////////////////////
+
+    private string RetrieveEnvironmentId()
+    {
+        var useStaging = PlayerPrefs.GetInt("use-staging", 0) == 1;
+        return useStaging ? "c1eed653-f1d1-4615-9fa7-181ad415f209" : "c1564a11-63ec-4236-8414-ec7972cc767f";
+    }
 
     private void ShowDynamicAuth()
     {
@@ -118,7 +132,7 @@ public class AuthScene : MonoBehaviour
 
             if (m_authResult > 0)
             {
-                _ = GetJWT(delay: 0.5f);
+                _ = GetJWT(delay: 0.25f);
             }
         }
     }

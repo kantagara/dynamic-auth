@@ -38,5 +38,19 @@ public class InitialScene : MonoBehaviour
             SceneManager.LoadScene("DynamicTest");
             useSampleScene = false;
         }
-	}
+    }
+
+    [ConsoleMethod("useStaging", "Use Staging environmentId")]
+    public static void UseStaging()
+    {
+        PlayerPrefs.SetInt("use-staging", 1);
+        PlayerPrefs.Save();
+    }
+
+    [ConsoleMethod("useDev", "Use Dev environmentId")]
+    public static void UseDev()
+    {
+        PlayerPrefs.SetInt("use-staging", 0);
+        PlayerPrefs.Save();
+    }
 }
