@@ -74,6 +74,7 @@ namespace DynamicSDK.Unity.Core
 
         // WebView Events
         public static event Action OnWebViewClosed;
+        public static event Action OnWebViewReady;
 
         // General Events
         public static event Action OnSDKInitialized;
@@ -88,6 +89,7 @@ namespace DynamicSDK.Unity.Core
         private DynamicSDKConfig config;
 
         private bool isInitialized = false;
+        private bool isWebViewReady = false;
         private string currentWalletAddress = "";
         private bool isConnected = false;
         private UserInfo currentUserInfo = null;
@@ -101,6 +103,7 @@ namespace DynamicSDK.Unity.Core
         /// Check if SDK is initialized and ready to use
         /// </summary>
         public bool IsInitialized => isInitialized;
+        public bool IsWebViewReady => isWebViewReady;
 
         /// <summary>
         /// Check if wallet is currently connected
@@ -260,8 +263,12 @@ namespace DynamicSDK.Unity.Core
             if (webViewService != null)
             {
                 webViewService.OnWebViewClosed += HandleWebViewClosed;
+                webViewService.OnWebViewReady += HandleWebViewReady;
             }
         }
+
+
+
 
         private System.Collections.IEnumerator PreloadWebViewAfterDelay()
         {
@@ -787,6 +794,16 @@ namespace DynamicSDK.Unity.Core
             }
 
             OnWebViewClosed?.Invoke();
+        }
+
+        private void HandleWebViewReady()
+        {
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[DynamicSDKManager] WebView is ready");
+            }
+            isWebViewReady = true;
+            OnWebViewReady?.Invoke();
         }
 
         private void HandleJwtTokenReceived(DynamicSDK.Unity.Messages.Auth.JwtTokenResponseMessage message)

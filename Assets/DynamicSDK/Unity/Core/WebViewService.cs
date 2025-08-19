@@ -18,6 +18,7 @@ namespace DynamicSDK.Unity.Core
         // Events
         public System.Action<UniWebViewMessage> OnMessageReceived;
         public System.Action OnWebViewClosed;
+        public System.Action OnWebViewReady;
 
         private void Awake()
         {
@@ -427,6 +428,7 @@ namespace DynamicSDK.Unity.Core
             {
                 Debug.Log($"[WebViewService] WebView page finished loading: {url} (Status: {statusCode})");
             }
+            OnWebViewReady?.Invoke();
         }
 
         private bool HandleShouldClose(UniWebView view)

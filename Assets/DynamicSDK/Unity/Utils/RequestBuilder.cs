@@ -13,10 +13,10 @@ namespace DynamicSDK.Unity.Utils
     {
         [JsonProperty("type")]
         public string type;
-        
+
         [JsonProperty("action")]
         public string action;
-        
+
         [JsonProperty("requestId")]
         public string requestId;
     }
@@ -49,7 +49,7 @@ namespace DynamicSDK.Unity.Utils
     {
         [JsonProperty("walletAddress")]
         public string walletAddress;
-        
+
         [JsonProperty("message")]
         public string message;
     }
@@ -59,16 +59,16 @@ namespace DynamicSDK.Unity.Utils
     {
         [JsonProperty("walletAddress")]
         public string walletAddress;
-        
+
         [JsonProperty("to")]
         public string to;
-        
+
         [JsonProperty("value")]
         public string value;
-        
+
         [JsonProperty("chain")]
         public string chain;
-        
+
         [JsonProperty("network")]
         public string network;
     }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using DynamicSDK.Unity.Core;
 using System.Collections;
+using System;
 
 
 public class LoginManager : MonoBehaviour
@@ -35,6 +36,7 @@ public class LoginManager : MonoBehaviour
         if (connectButton != null)
         {
             connectButton.onClick.AddListener(OnConnectButtonClicked);
+            SetConnectButtonEnabled(false);
         }
 
         // UI setup complete
@@ -48,6 +50,13 @@ public class LoginManager : MonoBehaviour
         DynamicSDKManager.OnSDKError += OnSDKError;
         DynamicSDKManager.OnSDKInitialized += OnSDKInitialized;
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
+        DynamicSDKManager.OnWebViewReady += OnWebViewReady;
+    }
+
+    private void OnWebViewReady()
+    {
+        Debug.Log("[LoginManager] WebView is ready");
+        SetConnectButtonEnabled(true);
     }
 
     private void CheckInitialConnectionStatus()
@@ -74,7 +83,7 @@ public class LoginManager : MonoBehaviour
         {
             if (sdkManager.IsInitialized)
             {
-                SetConnectButtonEnabled(true);
+                SetConnectButtonEnabled(sdkManager.IsWebViewReady);
             }
             else
             {
@@ -185,6 +194,7 @@ public class LoginManager : MonoBehaviour
 
     private void SetConnectButtonEnabled(bool enabled)
     {
+        Debug.Log($"[LoginManager] Setting connect button enabled: {enabled}");
         if (connectButton != null)
         {
             connectButton.interactable = enabled;
@@ -201,6 +211,7 @@ public class LoginManager : MonoBehaviour
         DynamicSDKManager.OnSDKError -= OnSDKError;
         DynamicSDKManager.OnSDKInitialized -= OnSDKInitialized;
         DynamicSDKManager.OnWebViewClosed -= OnWebViewClosed;
+        DynamicSDKManager.OnWebViewReady -= OnWebViewReady;
     }
     #endregion
 }

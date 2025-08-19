@@ -50,6 +50,7 @@ public class SampleScript : MonoBehaviour
         DynamicSDKManager.OnMessageSigned += OnMessageSigned;
         DynamicSDKManager.OnSDKError += OnSDKError;
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
+        DynamicSDKManager.OnWebViewReady += OnWebViewReady;
     }
 
     private void SubcribeButtons()
@@ -123,6 +124,12 @@ public class SampleScript : MonoBehaviour
         UpdateButtonInteractability();
     }
 
+    private void OnWebViewReady()
+    {
+        Debug.Log("[SampleScript] WebView is ready");
+        SetConnectButtonEnabled(true);
+    }
+
     #endregion
 
     #region Button Events
@@ -148,7 +155,7 @@ public class SampleScript : MonoBehaviour
         }
 
         // Update UI
-        connectButton.interactable = false;
+        SetConnectButtonEnabled(false);
         UpdateStatusText("Connecting wallet...");
         // Connect wallet
         sdk.ConnectWallet();
@@ -323,7 +330,7 @@ public class SampleScript : MonoBehaviour
         }
         else
         {
-            connectButton.interactable = true;
+            connectButton.interactable = false;
             disconnectButton.interactable = false;
             signButton.interactable = false;
             sendTransactionButton.interactable = false;
@@ -333,6 +340,16 @@ public class SampleScript : MonoBehaviour
     }
 
     private void UpdateStatusText(string text) { statusText.text = text; }
+
+    private void SetConnectButtonEnabled(bool enabled)
+    {
+        Debug.Log($"[SampleScript] Setting connect button enabled: {enabled}");
+        if (connectButton != null)
+        {
+            connectButton.interactable = enabled;
+        }
+    }
+
     private string GetSelectedNetwork()
     {
         if (chainDropdown == null)
@@ -340,6 +357,21 @@ public class SampleScript : MonoBehaviour
 
         string selected = chainDropdown.options[chainDropdown.value].text;
         return selected;
+    }
+    #endregion
+
+    #region Unity Lifecycle
+    private void OnDestroy()
+    {
+        // Unsubscribe from events to prevent memory leaks
+        DynamicSDKManager.OnWalletConnected -= OnWalletConnected;
+        DynamicSDKManager.OnWalletDisconnected -= OnWalletDisconnected;
+        DynamicSDKManager.OnJwtTokenReceived -= OnJwtTokenReceived;
+        DynamicSDKManager.OnTransactionSent -= OnTransactionSent;
+        DynamicSDKManager.OnMessageSigned -= OnMessageSigned;
+        DynamicSDKManager.OnSDKError -= OnSDKError;
+        DynamicSDKManager.OnWebViewClosed -= OnWebViewClosed;
+        DynamicSDKManager.OnWebViewReady -= OnWebViewReady;
     }
     #endregion
 }
