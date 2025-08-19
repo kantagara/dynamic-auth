@@ -15,9 +15,12 @@ public class AuthScene : MonoBehaviour
 
     DynamicSDKManager m_sdk;
     DynamicSDKManifest m_manifest;
+    bool m_isWebviewReady = false;
     bool m_walletConnected = false;
     bool m_isAuthenticating;
     int m_authResult = default;
+
+    bool m_waitingWebviewReady = false;
 
     void Awake()
     {
@@ -26,6 +29,7 @@ public class AuthScene : MonoBehaviour
         DynamicSDKManager.OnUserAuthenticated += OnUserAuthenticated;
         DynamicSDKManager.OnJwtTokenReceived += OnJwtTokenReceived;
         DynamicSDKManager.OnSDKError += OnSDKError;
+        DynamicSDKManager.OnWebViewReady += OnWebViewReady;
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
 
         LogInButton.onClick.AddListener(ShowDynamicAuth);
@@ -38,6 +42,7 @@ public class AuthScene : MonoBehaviour
         DynamicSDKManager.OnUserAuthenticated -= OnUserAuthenticated;
         DynamicSDKManager.OnJwtTokenReceived -= OnJwtTokenReceived;
         DynamicSDKManager.OnSDKError -= OnSDKError;
+        DynamicSDKManager.OnWebViewReady -= OnWebViewReady;
         DynamicSDKManager.OnWebViewClosed -= OnWebViewClosed;
     }
 
@@ -71,6 +76,12 @@ public class AuthScene : MonoBehaviour
         if (!m_sdk.IsInitialized)
         {
             m_sdk.InitializeSDK();
+        }
+
+        if (!m_isWebviewReady)
+        {
+            m_waitingWebviewReady = true;
+            return;
         }
 
         if (!m_walletConnected)
@@ -119,6 +130,29 @@ public class AuthScene : MonoBehaviour
     {
         Debug.Log($"[DynamicTest] SDK Error: {error}");
         m_authResult = -1;
+    }
+
+    private void OnWebViewReady()
+    {
+        Debug.Log("[DynamicTest] WebView ready");
+        m_isWebviewReady = true;
+
+        if (m_waitingWebviewReady)
+        {
+            m_waitingWebviewReady = false;
+
+            if (!m_walletConnected)
+            {
+                m_isAuthenticating = true;
+                m_authResult = default;
+
+                m_sdk.ConnectWallet();
+            }
+            else
+            {
+                _ = GetJWT(delay: 0);
+            }
+        }
     }
 
     private void OnWebViewClosed()
