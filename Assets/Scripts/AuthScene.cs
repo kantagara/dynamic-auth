@@ -50,10 +50,6 @@ public class AuthScene : MonoBehaviour
 
     void Start()
     {
-        var config = DynamicSDKConfig.Instance;
-        config.transitionDuration = 0.25f;
-        config.enableClickOutsideToClose = false;
-
         m_manifest = Resources.Load<DynamicSDKManifest>("DynamicSDKManifest");
         if (m_manifest != null)
         {
