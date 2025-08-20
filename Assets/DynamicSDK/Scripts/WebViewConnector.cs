@@ -170,6 +170,17 @@ public class WebViewConnector : MonoBehaviour
     {
         InitializeServices();
         SetupEventHandlers();
+        
+        // Add DeepLinkHandler for OAuth callbacks
+        if (GetComponent<DeepLinkHandler>() == null)
+        {
+            gameObject.AddComponent<DeepLinkHandler>();
+            
+            if (config != null && config.enableDebugLogs)
+            {
+                Debug.Log("[WebViewConnector] DeepLinkHandler added");
+            }
+        }
     }
 
     private void InitializeServices()

@@ -219,6 +219,17 @@ namespace DynamicSDK.Unity.Core
 
         private void InitializeComponents()
         {
+            // Load configuration asset if available
+            var configAsset = Resources.Load<DynamicSDK.Config.DynamicSDKConfigAsset>("DynamicSDKConfig");
+            if (configAsset != null)
+            {
+                configAsset.ApplyConfiguration();
+                if (config.enableDebugLogs)
+                {
+                    Debug.Log("[DynamicSDKManager] Loaded configuration from asset");
+                }
+            }
+            
             // Create WebViewConnector if not exists
             if (webViewConnector == null)
             {

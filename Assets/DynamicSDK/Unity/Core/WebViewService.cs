@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System;
 
 namespace DynamicSDK.Unity.Core
 {
@@ -14,11 +15,13 @@ namespace DynamicSDK.Unity.Core
         private bool isWebViewVisible = false;
         private bool isWebViewReady = false;
         private Rect webViewRect;
+        private string currentUrl;
 
         // Events
         public System.Action<UniWebViewMessage> OnMessageReceived;
         public System.Action OnWebViewClosed;
         public System.Action OnWebViewReady;
+        public System.Action<string> OnUrlChanged;
 
         private void Awake()
         {
@@ -141,6 +144,38 @@ namespace DynamicSDK.Unity.Core
             CloseWebView();
             // Next OpenBottomSheet() call will create a fresh webview
         }
+
+        /// <summary>
+        /// Get the current URL of the WebView
+        /// </summary>
+        public string GetCurrentUrl()
+        {
+            if (webView != null)
+            {
+                return webView.Url;
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Load a URL in the WebView
+        /// </summary>
+        public void Load(string url)
+        {
+            if (webView != null)
+            {
+                webView.Load(url);
+                if (config.enableDebugLogs)
+                {
+                    Debug.Log($"[WebViewService] Loading URL: {url}");
+                }
+            }
+            else
+            {
+                Debug.LogError("[WebViewService] Cannot load URL - WebView is null");
+            }
+        }
+
 
         /// <summary>
         /// Pre-load WebView in background without showing it
@@ -354,7 +389,11 @@ namespace DynamicSDK.Unity.Core
             // Setup event handlers
             webView.OnMessageReceived += HandleMessage;
             webView.OnShouldClose += HandleShouldClose;
+            webView.OnPageStarted += HandlePageStarted;
             webView.OnPageFinished += HandlePageFinished;
+
+            // Register URL interception handler for OAuth providers
+            webView.RegisterShouldHandleRequest(ShouldHandleRequest);
 
             if (config.enableDebugLogs)
             {
@@ -421,13 +460,66 @@ namespace DynamicSDK.Unity.Core
             OnMessageReceived?.Invoke(msg);
         }
 
+        private void HandlePageStarted(UniWebView view, string url)
+        {
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[WebViewService] Page navigation started to: {url}");
+            }
+            
+            // Handle special case for Dynamic SDK OAuth redirect
+            if (url.Contains("app.dynamicauth.com") && url.Contains("/redirect"))
+            {
+                if (config.enableDebugLogs)
+                {
+                    Debug.Log($"[WebViewService] Dynamic SDK OAuth redirect detected, waiting for final redirect...");
+                }
+                // Don't update current URL yet, wait for final redirect
+                return;
+            }
+            
+            // Check if URL actually changed
+            if (currentUrl != url)
+            {
+                string previousUrl = currentUrl;
+                currentUrl = url;
+                
+                if (config.enableDebugLogs)
+                {
+                    Debug.Log($"[WebViewService] URL changed from '{previousUrl}' to '{url}'");
+                }
+                
+                // Trigger URL changed event
+                OnUrlChanged?.Invoke(url);
+            }
+        }
+
         private void HandlePageFinished(UniWebView view, int statusCode, string url)
         {
             isWebViewReady = true;
+            currentUrl = url; // Update current URL when page finishes loading
+            
             if (config.enableDebugLogs)
             {
                 Debug.Log($"[WebViewService] WebView page finished loading: {url} (Status: {statusCode})");
             }
+            
+            // Inject JavaScript to mark this as WebView context
+            string jsCode = @"
+                // Mark as Unity WebView
+                localStorage.setItem('isUnityWebView', 'true');
+                window.isUnityWebView = true;
+                console.log('[Unity] Marked as WebView context');
+            ";
+            
+            webView.EvaluateJavaScript(jsCode, (result) => 
+            {
+                if (config.enableDebugLogs)
+                {
+                    Debug.Log("[WebViewService] Injected WebView context marker");
+                }
+            });
+            
             OnWebViewReady?.Invoke();
         }
 
@@ -437,8 +529,119 @@ namespace DynamicSDK.Unity.Core
             return true;
         }
 
+        private bool ShouldHandleRequest(UniWebViewChannelMethodHandleRequest request)
+        {
+            string url = request.Url;
+            
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[WebViewService] Checking if should handle URL: {url}");
+            }
+
+            // List of OAuth provider domains that should open in system browser
+            string[] oauthProviders = new string[]
+            {
+                "accounts.google.com",
+                "www.facebook.com",
+                "facebook.com",
+                "appleid.apple.com",
+                "login.microsoftonline.com",
+                "github.com",
+                "twitter.com",
+                "x.com",
+                "discord.com",
+                "linkedin.com"
+            };
+
+            // Check if URL is from OAuth provider
+            foreach (string provider in oauthProviders)
+            {
+                if (url.Contains(provider))
+                {
+                    // Replace redirect_uri with deeplink
+                    string modifiedUrl = ReplaceRedirectUriWithDeeplink(url);
+                    
+                    if (config.enableDebugLogs)
+                    {
+                        Debug.Log($"[WebViewService] OAuth provider detected ({provider})");
+                        Debug.Log($"[WebViewService] Original URL: {url}");
+                        Debug.Log($"[WebViewService] Modified URL: {modifiedUrl}");
+                    }
+
+                    // Open in system browser with modified URL
+                    OpenInSystemBrowser(modifiedUrl);
+                    
+                    // Return false to cancel navigation in WebView
+                    return false;
+                }
+            }
+
+            // Allow WebView to handle all other URLs
+            return true;
+        }
+
+        private string ReplaceRedirectUriWithDeeplink(string url)
+        {
+            // Simply store the original redirect URI for OAuth providers
+            // Don't modify the URL since we're opening in system browser
+            try
+            {
+                var uri = new System.Uri(url);
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                
+                // For OAuth providers, store the original redirect
+                if (uri.Host.Contains("accounts.google.com") || 
+                    uri.Host.Contains("facebook.com") || 
+                    uri.Host.Contains("appleid.apple.com"))
+                {
+                    string redirectUri = query["redirect_uri"];
+                    if (!string.IsNullOrEmpty(redirectUri))
+                    {
+                        PlayerPrefs.SetString("oauth_original_redirect", redirectUri);
+                        PlayerPrefs.SetString("oauth_opened_from_unity", "true");
+                        PlayerPrefs.Save();
+                        
+                        if (config.enableDebugLogs)
+                        {
+                            Debug.Log($"[WebViewService] Stored original redirect URI: {redirectUri}");
+                            Debug.Log($"[WebViewService] Marked OAuth as opened from Unity app");
+                        }
+                    }
+                }
+                
+                return url;
+            }
+            catch (System.Exception e)
+            {
+                if (config.enableDebugLogs)
+                {
+                    Debug.LogError($"[WebViewService] Error parsing URL: {e.Message}");
+                }
+                return url;
+            }
+        }
+
+        private void OpenInSystemBrowser(string url)
+        {
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[WebViewService] Opening URL in system browser: {url}");
+            }
+
+            // Simply open URL in system browser
+            Application.OpenURL(url);
+            
+            // Hide the WebView while OAuth is in progress
+            HideWebView();
+        }
+
         private void OnDestroy()
         {
+            if (webView != null)
+            {
+                // Unregister handlers before destroying
+                webView.UnregisterShouldHandleRequest();
+            }
             CloseWebView();
         }
     }

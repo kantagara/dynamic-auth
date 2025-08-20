@@ -12,7 +12,7 @@ namespace DynamicSDK.Unity.Core
     {
         [Header("WebView Settings")]
 
-        private string _startUrl = "https://dynamic-sdk-react-app.vercel.app/";
+        private string _startUrl = "http://localhost:3000";
 
         public string startUrl
         {
