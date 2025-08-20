@@ -383,7 +383,8 @@ PlayerSettings:
       m_Height: 20
       m_Kind: 2
       m_SubKind: iPad
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 2a005c167e29f8b4baff9a06d6ad66c3, type: 3}
       m_Width: 1024
       m_Height: 1024
       m_Kind: 4
