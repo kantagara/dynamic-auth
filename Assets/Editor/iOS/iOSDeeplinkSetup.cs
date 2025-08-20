@@ -23,6 +23,7 @@ public class iOSDeeplinkSetup
             plist.ReadFromFile(plistPath);
             
             PlistElementDict rootDict = plist.root;
+            rootDict.SetBoolean("ITSAppUsesNonExemptEncryption", false);
             
             // Add URL schemes for deeplink
             PlistElementArray urlTypes = rootDict.CreateArray("CFBundleURLTypes");
