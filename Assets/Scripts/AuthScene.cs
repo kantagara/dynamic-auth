@@ -12,6 +12,7 @@ public class AuthScene : MonoBehaviour
 {
     [SerializeField] TMP_Text Result;
     [SerializeField] Button LogInButton;
+    [SerializeField] Button LogOutButton;
 
     DynamicSDKManager m_sdk;
     DynamicSDKManifest m_manifest;
@@ -33,6 +34,7 @@ public class AuthScene : MonoBehaviour
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
 
         LogInButton.onClick.AddListener(ShowDynamicAuth);
+        LogOutButton.onClick.AddListener(Disconnect);
     }
 
     void OnDestroy()
@@ -95,6 +97,16 @@ public class AuthScene : MonoBehaviour
         {
             _ = GetJWT(delay: 0);
         }
+    }
+
+    private void Disconnect()
+    {
+        if (!m_walletConnected)
+        {
+            return;
+        }
+
+        m_sdk.DisconnectWallet();
     }
 
     //////////////////////////////////////////////////
