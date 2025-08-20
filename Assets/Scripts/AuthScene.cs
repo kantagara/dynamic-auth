@@ -129,7 +129,7 @@ public class AuthScene : MonoBehaviour
     private void OnSDKError(string error)
     {
         Debug.Log($"[DynamicTest] SDK Error: {error}");
-        m_authResult = -1;
+        // m_authResult = -1;
     }
 
     private void OnWebViewReady()
