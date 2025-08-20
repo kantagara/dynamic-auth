@@ -79,7 +79,7 @@ PlayerSettings:
   androidFullscreenMode: 1
   androidAutoRotationBehavior: 1
   androidPredictiveBackSupport: 1
-  androidApplicationEntry: 2
+  androidApplicationEntry: 1
   defaultIsNativeResolution: 1
   macRetinaSupport: 1
   runInBackground: 0
@@ -140,7 +140,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 0.1.0
+  bundleVersion: 0.5.6
   preloadedAssets:
   - {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   metroInputSource: 0
@@ -166,11 +166,11 @@ PlayerSettings:
   applicationIdentifier:
     Android: com.dynamic.test
     Standalone: com.Unity-Technologies.com.unity.template.urp-blank
-    iPhone: com.Unity-Technologies.com.unity.template.urp-blank
+    iPhone: demo.clay.prototype
   buildNumber:
     Standalone: 0
     VisionOS: 0
-    iPhone: 0
+    iPhone: 8200
     tvOS: 0
   overrideDefaultApplicationIdentifier: 1
   AndroidBundleVersionCode: 1
@@ -241,14 +241,14 @@ PlayerSettings:
   metalCompileShaderBinary: 0
   iOSRenderExtraFrameOnPause: 0
   iosCopyPluginsCodeInsteadOfSymlink: 0
-  appleDeveloperTeamID: 
+  appleDeveloperTeamID: UH5JQ78YX4
   iOSManualSigningProvisioningProfileID: 
   tvOSManualSigningProvisioningProfileID: 
   VisionOSManualSigningProvisioningProfileID: 
   iOSManualSigningProvisioningProfileType: 0
   tvOSManualSigningProvisioningProfileType: 0
   VisionOSManualSigningProvisioningProfileType: 0
-  appleEnableAutomaticSigning: 0
+  appleEnableAutomaticSigning: 1
   iOSRequireARKit: 0
   iOSAutomaticallyDetectAndAddCapabilities: 1
   appleEnableProMotion: 0
@@ -256,7 +256,7 @@ PlayerSettings:
   clonedFromGUID: 3c72c65a16f0acb438eed22b8b16c24a
   templatePackageId: com.unity.template.urp-blank@17.0.11
   templateDefaultScene: Assets/Scenes/SampleScene.unity
-  useCustomMainManifest: 0
+  useCustomMainManifest: 1
   useCustomLauncherManifest: 0
   useCustomMainGradleTemplate: 0
   useCustomLauncherGradleManifest: 0
