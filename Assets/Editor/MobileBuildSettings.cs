@@ -3,7 +3,7 @@ using UnityEditor;
 
 public class MobileBuildSettings
 {
-    [MenuItem("DynamicSDK/Setup Mobile Build")]
+    // [MenuItem("DynamicSDK/Setup Mobile Build")]
     public static void SetupMobileBuild()
     {
         // iOS Settings
