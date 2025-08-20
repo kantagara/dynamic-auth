@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
 using System.IO;
+using UnityEditor.Build;
 
 public class iOSDeeplinkSetup
 {
@@ -12,6 +13,10 @@ public class iOSDeeplinkSetup
     {
         if (target == BuildTarget.iOS)
         {
+            var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
+            var namedTargetGroup = NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+            var appId = PlayerSettings.GetApplicationIdentifier(namedTargetGroup);
+
             // Setup Info.plist
             string plistPath = path + "/Info.plist";
             PlistDocument plist = new PlistDocument();
@@ -22,7 +27,7 @@ public class iOSDeeplinkSetup
             // Add URL schemes for deeplink
             PlistElementArray urlTypes = rootDict.CreateArray("CFBundleURLTypes");
             PlistElementDict urlScheme = urlTypes.AddDict();
-            urlScheme.SetString("CFBundleURLName", "com.yourcompany.dynamicunity");
+            urlScheme.SetString("CFBundleURLName", appId);
             
             PlistElementArray schemes = urlScheme.CreateArray("CFBundleURLSchemes");
             schemes.AddString("dynamicunity");
