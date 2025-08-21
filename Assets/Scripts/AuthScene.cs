@@ -172,11 +172,11 @@ public class AuthScene : MonoBehaviour
         if (m_isAuthenticating)
         {
             m_isAuthenticating = false;
+        }
 
-            if (m_authResult > 0)
-            {
-                _ = GetJWT(delay: 0.25f);
-            }
+        if (m_authResult > 0 && string.IsNullOrEmpty(Result.text))
+        {
+            _ = GetJWT(delay: 0.25f);
         }
     }
 
