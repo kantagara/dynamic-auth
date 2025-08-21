@@ -118,6 +118,8 @@ public class AuthScene : MonoBehaviour
     {
         Debug.Log($"[DynamicTest] Wallet disconnected");
         m_walletConnected = false;
+
+        Result.text = default;
     }
 
     private void OnUserAuthenticated(UserInfo userInfo)
