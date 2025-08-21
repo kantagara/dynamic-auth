@@ -102,6 +102,7 @@ public class AuthScene : MonoBehaviour
             return;
         }
 
+        m_authResult = default;
         m_sdk.DisconnectWallet();
     }
 
