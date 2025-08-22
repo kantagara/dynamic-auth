@@ -184,9 +184,11 @@ namespace DynamicSDK.Unity.Core
                 Debug.Log($"[DeepLinkHandler] Received authorization code: {code}");
             }
             
-            // Reopen WebView and complete OAuth
+            // Clear OAuth waiting state since we received the callback
             if (webViewService != null)
             {
+                webViewService.ClearOAuthWaitingState();
+                
                 // Make sure WebView is visible
                 webViewService.OpenBottomSheet();
                 

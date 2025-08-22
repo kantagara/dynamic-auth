@@ -772,6 +772,8 @@ public class WebViewConnector : MonoBehaviour
 
         Debug.Log("[WebViewConnector] Connect wallet requested");
 
+        isProcessingRequest = false; // Reset processing state
+
         // Queue this request to prevent conflicts with other WebView operations
         QueueWebViewRequest(() =>
         {

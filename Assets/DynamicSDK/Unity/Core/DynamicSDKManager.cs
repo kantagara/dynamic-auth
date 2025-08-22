@@ -94,6 +94,10 @@ namespace DynamicSDK.Unity.Core
         private bool isConnected = false;
         private UserInfo currentUserInfo = null;
         private WalletCredential currentWalletInfo = null;
+        
+        // OAuth monitoring state
+        private bool isWaitingForOAuth = false;
+        private string currentOAuthProvider = "";
 
         #endregion
 
@@ -275,6 +279,7 @@ namespace DynamicSDK.Unity.Core
             {
                 webViewService.OnWebViewClosed += HandleWebViewClosed;
                 webViewService.OnWebViewReady += HandleWebViewReady;
+                webViewService.OnOAuthCancelled += HandleOAuthCancelled;
             }
         }
 
@@ -664,6 +669,196 @@ namespace DynamicSDK.Unity.Core
 
         #endregion
 
+        #region OAuth Monitoring
+
+        /// <summary>
+        /// Set OAuth waiting state for monitoring app focus
+        /// </summary>
+        public void SetOAuthWaitingState(bool waiting, string provider = "")
+        {
+            Debug.Log($"[DynamicSDKManager] SetOAuthWaitingState called: waiting={waiting}, provider={provider}");
+            
+            // Debug GameObject state
+            Debug.Log($"[DynamicSDKManager] GameObject active: {gameObject.activeInHierarchy}, enabled: {enabled}");
+            Debug.Log($"[DynamicSDKManager] Instance valid: {_instance != null}, Instance == this: {_instance == this}");
+            
+            isWaitingForOAuth = waiting;
+            currentOAuthProvider = provider;
+            
+            // Force log even without debug mode to verify it's working
+            Debug.Log($"[DynamicSDKManager] OAuth waiting state SET: {waiting}, provider: {provider}, isWaitingForOAuth={isWaitingForOAuth}");
+            
+            if (waiting)
+            {
+                Debug.Log("[DynamicSDKManager] Setting up OAuth monitoring:");
+                
+                // Check if we can receive events
+                if (!gameObject.activeInHierarchy)
+                {
+                    Debug.LogError("[DynamicSDKManager] WARNING: GameObject is NOT active! Will not receive OnApplicationPause/Focus events!");
+                }
+                
+                // Start a coroutine as backup detection method
+                StartCoroutine(BackupOAuthDetection());
+                
+                // Platform-specific info
+#if UNITY_ANDROID
+                Debug.Log("  - Platform: ANDROID - Using OnApplicationPause for detection");
+#elif UNITY_IOS
+                Debug.Log("  - Platform: iOS - Using OnApplicationFocus for detection");
+#else
+                Debug.Log("  - Platform: EDITOR/OTHER - Using both OnApplicationPause and OnApplicationFocus");
+#endif
+                
+                Debug.Log($"  - Monitoring for OAuth callback from: {provider}");
+                Debug.Log("  - Backup coroutine started for detection");
+            }
+            else
+            {
+                // Cancel any pending checks when not waiting
+                CancelInvoke(nameof(CheckOAuthStatus));
+                StopAllCoroutines();
+            }
+        }
+
+        /// <summary>
+        /// Clear OAuth waiting state when OAuth completes
+        /// </summary>
+        public void ClearOAuthWaitingState()
+        {
+            isWaitingForOAuth = false;
+            currentOAuthProvider = "";
+            
+            // Cancel any pending checks
+            CancelInvoke(nameof(CheckOAuthStatus));
+            
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[DynamicSDKManager] OAuth waiting state cleared");
+            }
+        }
+
+        // Platform-specific handling for mobile
+        
+        /// <summary>
+        /// Handle app pause/resume - PRIMARY ON ANDROID
+        /// </summary>
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            Debug.Log($"[DynamicSDKManager] OnApplicationPause: {pauseStatus}, isWaitingForOAuth: {isWaitingForOAuth}");
+            
+            if (!isWaitingForOAuth) return;
+            
+#if UNITY_ANDROID || UNITY_EDITOR
+            if (!pauseStatus) // App resumed from pause
+            {
+                Debug.Log("[DynamicSDKManager] App resumed from pause - checking OAuth immediately");
+                CheckOAuthStatus();
+            }
+            else
+            {
+                Debug.Log($"[DynamicSDKManager] App paused - user in {currentOAuthProvider} browser");
+            }
+#endif
+        }
+        
+        /// <summary>
+        /// Handle app focus - PRIMARY ON iOS
+        /// </summary>
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            Debug.Log($"[DynamicSDKManager] OnApplicationFocus: {hasFocus}, isWaitingForOAuth: {isWaitingForOAuth}");
+            
+            if (!isWaitingForOAuth) return;
+            
+#if UNITY_IOS || UNITY_EDITOR
+            if (hasFocus) // App gained focus
+            {
+                Debug.Log("[DynamicSDKManager] App gained focus - checking OAuth immediately");
+                CheckOAuthStatus();
+            }
+            else
+            {
+                Debug.Log($"[DynamicSDKManager] App lost focus - user in {currentOAuthProvider} browser");
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Backup OAuth detection using coroutine
+        /// </summary>
+        private System.Collections.IEnumerator BackupOAuthDetection()
+        {
+            Debug.Log("[DynamicSDKManager] Backup OAuth detection started");
+            float startTime = Time.time;
+            float timeout = 60f; // 60 seconds timeout
+            
+            // Wait for app to lose focus first
+            bool hasLostFocus = false;
+            while (isWaitingForOAuth && Time.time - startTime < timeout)
+            {
+                if (!Application.isFocused && !hasLostFocus)
+                {
+                    hasLostFocus = true;
+                    Debug.Log("[DynamicSDKManager] Backup detection: App lost focus");
+                }
+                else if (Application.isFocused && hasLostFocus)
+                {
+                    Debug.Log("[DynamicSDKManager] Backup detection: App regained focus - checking OAuth immediately");
+                    
+                    if (isWaitingForOAuth)
+                    {
+                        Debug.Log("[DynamicSDKManager] Backup detection: OAuth cancelled");
+                        CheckOAuthStatus();
+                    }
+                    yield break;
+                }
+                
+                yield return new WaitForSeconds(0.2f);
+            }
+            
+            if (Time.time - startTime >= timeout)
+            {
+                Debug.Log("[DynamicSDKManager] Backup OAuth detection timeout");
+            }
+        }
+        
+        /// <summary>
+        /// Check if OAuth was cancelled after app resume
+        /// </summary>
+        private void CheckOAuthStatus()
+        {
+            Debug.Log($"[DynamicSDKManager] CheckOAuthStatus called: isWaitingForOAuth={isWaitingForOAuth}");
+            
+            if (isWaitingForOAuth)
+            {
+                Debug.Log($"[DynamicSDKManager] OAuth cancelled - no deep link from {currentOAuthProvider}");
+
+                // Tell WebViewService to handle OAuth cancellation
+                if (webViewService != null)
+                {
+                    Debug.Log("[DynamicSDKManager] Calling webViewService.HandleOAuthCancelled()");
+                    webViewService.HandleOAuthCancelled();
+                    ConnectWallet();
+                }
+                else
+                {
+                    Debug.LogError("[DynamicSDKManager] webViewService is NULL! Cannot handle OAuth cancellation!");
+                }
+                
+                // Reset state
+                isWaitingForOAuth = false;
+                currentOAuthProvider = "";
+                Debug.Log("[DynamicSDKManager] OAuth waiting state reset");
+            }
+            else
+            {
+                Debug.Log("[DynamicSDKManager] CheckOAuthStatus: Not waiting for OAuth, ignoring");
+            }
+        }
+
+        #endregion
+
         #region Event Handlers
 
         private void HandleWalletConnected(string walletAddress)
@@ -815,6 +1010,38 @@ namespace DynamicSDK.Unity.Core
             }
             isWebViewReady = true;
             OnWebViewReady?.Invoke();
+        }
+
+        private void HandleOAuthCancelled()
+        {
+            Debug.Log("[DynamicSDKManager] HandleOAuthCancelled called");
+            
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[DynamicSDKManager] OAuth cancelled - resetting connection state");
+            }
+            
+            // Reset connection state
+            isConnected = false;
+            currentWalletAddress = "";
+            
+            Debug.Log($"[DynamicSDKManager] Connection state reset: isConnected={isConnected}");
+            
+            // Notify listeners that connection failed
+            if (OnConnectionStatusChanged != null)
+            {
+                Debug.Log("[DynamicSDKManager] Firing OnConnectionStatusChanged(false)");
+                OnConnectionStatusChanged.Invoke(false);
+            }
+            else
+            {
+                Debug.LogWarning("[DynamicSDKManager] OnConnectionStatusChanged has no listeners!");
+            }
+            
+            if (OnSDKError != null)
+            {
+                OnSDKError.Invoke("OAuth authentication cancelled by user");
+            }
         }
 
         private void HandleJwtTokenReceived(DynamicSDK.Unity.Messages.Auth.JwtTokenResponseMessage message)

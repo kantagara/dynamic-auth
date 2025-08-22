@@ -51,6 +51,7 @@ public class SampleScript : MonoBehaviour
         DynamicSDKManager.OnSDKError += OnSDKError;
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
         DynamicSDKManager.OnWebViewReady += OnWebViewReady;
+        DynamicSDKManager.OnConnectionStatusChanged += OnConnectionStatusChanged;
     }
 
     private void SubcribeButtons()
@@ -128,6 +129,18 @@ public class SampleScript : MonoBehaviour
     {
         Debug.Log("[SampleScript] WebView is ready");
         SetConnectButtonEnabled(true);
+    }
+
+    private void OnConnectionStatusChanged(bool isConnected)
+    {
+        Debug.Log($"[SampleScript] Connection status changed: {isConnected}");
+        UpdateButtonInteractability();
+        
+        if (!isConnected)
+        {
+            walletAddressText.text = "Wallet Disconnected";
+            UpdateStatusText("Ready to connect");
+        }
     }
 
     #endregion
@@ -372,6 +385,7 @@ public class SampleScript : MonoBehaviour
         DynamicSDKManager.OnSDKError -= OnSDKError;
         DynamicSDKManager.OnWebViewClosed -= OnWebViewClosed;
         DynamicSDKManager.OnWebViewReady -= OnWebViewReady;
+        DynamicSDKManager.OnConnectionStatusChanged -= OnConnectionStatusChanged;
     }
     #endregion
 }

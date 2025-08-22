@@ -22,6 +22,7 @@ namespace DynamicSDK.Unity.Core
         public System.Action OnWebViewClosed;
         public System.Action OnWebViewReady;
         public System.Action<string> OnUrlChanged;
+        public System.Action OnOAuthCancelled;
 
         private void Awake()
         {
@@ -382,6 +383,10 @@ namespace DynamicSDK.Unity.Core
 
         private void ConfigureWebView()
         {
+            // Set custom user agent to identify Unity WebView
+            string customUserAgent = webView.GetUserAgent() + " DynamicUnitySDK/1.0 UniWebView";
+            webView.SetUserAgent(customUserAgent);
+            
             // Set other properties
             webView.SetShowToolbar(false, false, false, false);
             webView.BackgroundColor = new Color(0, 0, 0, 0);
@@ -397,7 +402,7 @@ namespace DynamicSDK.Unity.Core
 
             if (config.enableDebugLogs)
             {
-                Debug.Log("[WebViewService] WebView configured");
+                Debug.Log($"[WebViewService] WebView configured with user agent: {customUserAgent}");
             }
         }
 
@@ -627,12 +632,93 @@ namespace DynamicSDK.Unity.Core
             {
                 Debug.Log($"[WebViewService] Opening URL in system browser: {url}");
             }
+            
+            // Detect provider for logging
+            string provider = "";
+            if (url.Contains("google.com")) provider = "google";
+            else if (url.Contains("facebook.com")) provider = "facebook";
+            else if (url.Contains("apple.com")) provider = "apple";
+            else if (url.Contains("microsoft")) provider = "microsoft";
+            else if (url.Contains("github.com")) provider = "github";
+            else if (url.Contains("twitter.com") || url.Contains("x.com")) provider = "twitter";
+            else if (url.Contains("discord.com")) provider = "discord";
+            else if (url.Contains("linkedin.com")) provider = "linkedin";
+            else provider = "unknown";
+            
+            if (config.enableDebugLogs)
+            {
+                Debug.Log($"[WebViewService] OAuth provider detected: {provider}");
+            }
+            
+            // Tell DynamicSDKManager to monitor OAuth
+            Debug.Log($"[WebViewService] Getting DynamicSDKManager instance...");
+            var sdkManager = DynamicSDK.Unity.Core.DynamicSDKManager.Instance;
+            
+            if (sdkManager != null)
+            {
+                Debug.Log($"[WebViewService] DynamicSDKManager found, setting OAuth waiting state for {provider}");
+                sdkManager.SetOAuthWaitingState(true, provider);
+            }
+            else
+            {
+                Debug.LogError("[WebViewService] DynamicSDKManager.Instance is NULL! OAuth monitoring will not work!");
+            }
 
-            // Simply open URL in system browser
+            // Open URL in system browser
             Application.OpenURL(url);
             
             // Hide the WebView while OAuth is in progress
-            HideWebView();
+            // HideWebView();
+            
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[WebViewService] OAuth monitoring delegated to DynamicSDKManager");
+            }
+        }
+
+        /// <summary>
+        /// Handle OAuth cancellation - called by DynamicSDKManager
+        /// </summary>
+        public void HandleOAuthCancelled()
+        {
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[WebViewService] Handling OAuth cancellation - resetting WebView to initial state");
+            }
+
+            // Reload current page
+            if (webView != null)
+            {
+                webView.Reload();
+            }
+
+            HideWithAnimation();
+
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[WebViewService] WebView reset to initial state with fresh instance");
+            }
+            
+            // Fire event to notify DynamicSDKManager
+            OnOAuthCancelled?.Invoke();
+        }
+        
+        /// <summary>
+        /// Clear OAuth waiting state when OAuth completes successfully
+        /// </summary>
+        public void ClearOAuthWaitingState()
+        {
+            // Tell DynamicSDKManager to clear OAuth waiting state
+            var sdkManager = DynamicSDK.Unity.Core.DynamicSDKManager.Instance;
+            if (sdkManager != null)
+            {
+                sdkManager.ClearOAuthWaitingState();
+            }
+            
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[WebViewService] OAuth waiting state cleared - OAuth completed successfully");
+            }
         }
 
         private void OnDestroy()
