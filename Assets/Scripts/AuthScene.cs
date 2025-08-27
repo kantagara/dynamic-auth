@@ -10,7 +10,15 @@ using UnityEngine.UI;
 
 public class AuthScene : MonoBehaviour
 {
-    [SerializeField] TMP_Text Result;
+    [Header("Top")]
+    [SerializeField] TMP_Text JwtResult;
+    [SerializeField] Button JwtCopyButton;
+
+    [SerializeField] TMP_InputField MessageInput;
+    [SerializeField] TMP_Text Signature;
+    [SerializeField] Button SignButton;
+
+    [Header("Bottom")]
     [SerializeField] Button LogInButton;
     [SerializeField] Button LogOutButton;
 
@@ -32,6 +40,10 @@ public class AuthScene : MonoBehaviour
         DynamicSDKManager.OnSDKError += OnSDKError;
         DynamicSDKManager.OnWebViewReady += OnWebViewReady;
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
+        DynamicSDKManager.OnMessageSigned += OnMessageSigned;        
+
+        JwtCopyButton.onClick.AddListener(CopyJwt);
+        SignButton.onClick.AddListener(SignMessage);
 
         LogInButton.onClick.AddListener(ShowDynamicAuth);
         LogOutButton.onClick.AddListener(Disconnect);
@@ -46,6 +58,7 @@ public class AuthScene : MonoBehaviour
         DynamicSDKManager.OnSDKError -= OnSDKError;
         DynamicSDKManager.OnWebViewReady -= OnWebViewReady;
         DynamicSDKManager.OnWebViewClosed -= OnWebViewClosed;
+        DynamicSDKManager.OnMessageSigned -= OnMessageSigned;
     }
 
     void Start()
@@ -62,6 +75,30 @@ public class AuthScene : MonoBehaviour
     }
 
     /////////////////////////////////////////////////
+
+    void CopyJwt()
+    {
+        var jwt = JwtResult.text;
+        if (!string.IsNullOrEmpty(jwt))
+        {
+            GUIUtility.systemCopyBuffer = jwt;
+        }
+    }
+
+    void SignMessage()
+    {
+        if (!m_walletConnected)
+        {
+            return;
+        }
+
+        var message = MessageInput.text;
+        if (!string.IsNullOrEmpty(message))
+        {
+            Signature.text = default;
+            m_sdk.SignMessage(message);
+        }
+    }
 
     private string RetrieveEnvironmentId()
     {
@@ -120,7 +157,7 @@ public class AuthScene : MonoBehaviour
         Debug.Log($"[DynamicTest] Wallet disconnected");
         m_walletConnected = false;
 
-        Result.text = default;
+        JwtResult.text = default;
     }
 
     private void OnUserAuthenticated(UserInfo userInfo)
@@ -132,7 +169,7 @@ public class AuthScene : MonoBehaviour
     private void OnJwtTokenReceived(JwtTokenResponseMessage jwtToken)
     {
         var jwt = jwtToken.data.token;
-        Result.text = $"JWT token received:\n{jwt}";
+        JwtResult.text = $"JWT token received:\n{jwt}";
 
         Debug.Log($"[DynamicTest] JWT token received: {jwt}");
     }
@@ -175,10 +212,16 @@ public class AuthScene : MonoBehaviour
             m_isAuthenticating = false;
         }
 
-        if (m_authResult > 0 && string.IsNullOrEmpty(Result.text))
+        if (m_authResult > 0 && string.IsNullOrEmpty(JwtResult.text))
         {
             _ = GetJWT(delay: 0.25f);
         }
+    }
+
+    private void OnMessageSigned(string signature)
+    {
+        Signature.text = signature;
+        GUIUtility.systemCopyBuffer = signature;
     }
 
     async Awaitable GetJWT(float delay)
