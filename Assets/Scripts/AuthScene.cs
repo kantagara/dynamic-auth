@@ -216,6 +216,9 @@ public class AuthScene : MonoBehaviour
         {
             _ = GetJWT(delay: 0.25f);
         }
+
+        LogInButton.interactable = !DynamicSDKManager.Instance.IsWalletConnected;
+        LogOutButton.interactable = DynamicSDKManager.Instance.IsWalletConnected;
     }
 
     private void OnMessageSigned(string signature)
