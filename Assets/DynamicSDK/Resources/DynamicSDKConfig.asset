@@ -12,10 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2821d942a0d849098af4a449a23e9a2, type: 3}
   m_Name: DynamicSDKConfig
   m_EditorClassIdentifier: 
-  serverUrl: https://dynamic-sdk-react-app.vercel.app
-  mobileServerUrl: https://dynamic-sdk-react-app.vercel.app
+  serverUrl: https://dynamic-unity-webview.vercel.app
+  mobileServerUrl: https://dynamic-unity-webview.vercel.app
   heightRatio: 0.6
   bottomOffset: 0
+  handleEditorSafeAreaAutomatically: 1
+  editorSafeAreaBottomPadding: 0.05
+  useWebViewForOAuthInEditor: 1
   transitionDuration: 0.35
   enableClickOutsideToClose: 1
   enableWebViewPreload: 1

@@ -64,7 +64,7 @@ namespace DynamicSDK.Unity.Core
         public static event Action<JwtTokenResponseMessage> OnJwtTokenReceived;
 
         // Wallet Events  
-        public static event Action<string> OnTransactionSent;
+        public static event Action<string> OnTransactionHashReceived;
         public static event Action<string> OnMessageSigned;
         public static event Action<BalanceResponseData> OnBalanceUpdated;
         public static event Action<BalanceResponseData> OnWalletSwitched;
@@ -922,7 +922,7 @@ namespace DynamicSDK.Unity.Core
                 Debug.Log($"[DynamicSDKManager] Transaction sent: {transactionHash}");
             }
 
-            OnTransactionSent?.Invoke(transactionHash);
+            OnTransactionHashReceived?.Invoke(transactionHash);
         }
 
         private void HandleMessageSigned(string signature)

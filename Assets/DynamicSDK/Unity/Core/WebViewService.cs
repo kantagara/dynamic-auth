@@ -210,7 +210,7 @@ namespace DynamicSDK.Unity.Core
         /// <summary>
         /// Send a message to the WebView using the correct custom event pattern
         /// </summary>
-        public void SendMessage(string jsonMessage)
+        public new void SendMessage(string jsonMessage)
         {
             if (webView != null && webView.gameObject.activeInHierarchy && isWebViewReady)
             {
@@ -357,8 +357,57 @@ namespace DynamicSDK.Unity.Core
 
         private void SetupWebViewFrame()
         {
-#if !UNITY_EDITOR
-            // Calculate size and position for bottom sheet
+#if UNITY_EDITOR
+            // Unity Editor (all platforms) - use new safe area logic
+            float screenHeight = Screen.height;
+            float screenWidth = Screen.width;
+            
+            if (config.handleEditorSafeAreaAutomatically)
+            {
+                // Get safe area for Unity Editor
+                var safeArea = Screen.safeArea;
+                float safeBottom = safeArea.y;
+                float safeTop = screenHeight - (safeArea.y + safeArea.height);
+                
+                // Calculate effective height considering safe area
+                float effectiveHeight = screenHeight - safeBottom - safeTop;
+                float sheetHeight = effectiveHeight * config.heightRatio;
+                
+                // Position from safe bottom with configurable padding
+                float additionalPadding = effectiveHeight * config.editorSafeAreaBottomPadding;
+                float bottomPosition = safeBottom + additionalPadding;
+                
+                webViewRect = new Rect(0, bottomPosition, screenWidth, sheetHeight);
+                
+                if (config.enableDebugLogs)
+                {
+                    Debug.Log($"[WebViewService] Unity Editor Safe Area Frame Setup:");
+                    Debug.Log($"[WebViewService] Screen: {screenWidth}x{screenHeight}");
+                    Debug.Log($"[WebViewService] Safe Area: {safeArea}");
+                    Debug.Log($"[WebViewService] Effective Height: {effectiveHeight}");
+                    Debug.Log($"[WebViewService] Additional Padding: {additionalPadding}");
+                    Debug.Log($"[WebViewService] WebView Frame: x=0, y={bottomPosition}, width={screenWidth}, height={sheetHeight}");
+                }
+            }
+            else
+            {
+                // Use standard calculation for Unity Editor without safe area
+                float sheetHeight = screenHeight * config.heightRatio;
+                float offsetHeight = screenHeight * config.bottomOffset;
+                float bottomPosition = screenHeight - sheetHeight - offsetHeight;
+                
+                webViewRect = new Rect(0, bottomPosition, screenWidth, sheetHeight);
+                
+                if (config.enableDebugLogs)
+                {
+                    Debug.Log($"[WebViewService] Unity Editor Standard Frame: x=0, y={bottomPosition}, width={screenWidth}, height={sheetHeight}");
+                }
+            }
+            
+            webView.Frame = webViewRect;
+            UniWebView.SetWebContentsDebuggingEnabled(true);
+#else
+            // iOS/Android devices - keep original logic unchanged
             float screenHeight = Screen.height;
             float screenWidth = Screen.width;
             float sheetHeight = screenHeight * config.heightRatio;
@@ -371,13 +420,8 @@ namespace DynamicSDK.Unity.Core
 
             if (config.enableDebugLogs)
             {
-                Debug.Log($"[WebViewService] WebView Frame: x=0, y={bottomPosition}, width={screenWidth}, height={sheetHeight}, offset={offsetHeight}");
+                Debug.Log($"[WebViewService] iOS/Android Frame: x=0, y={bottomPosition}, width={screenWidth}, height={sheetHeight}, offset={offsetHeight}");
             }
-#else
-            // In Unity Editor, use full screen for easier testing
-            webViewRect = new Rect(0, 0, Screen.width, Screen.height);
-            webView.Frame = webViewRect;
-            UniWebView.SetWebContentsDebuggingEnabled(true);
 #endif
         }
 
@@ -388,8 +432,30 @@ namespace DynamicSDK.Unity.Core
             webView.SetUserAgent(customUserAgent);
             
             // Set other properties
-            webView.SetShowToolbar(false, false, false, false);
+            webView.EmbeddedToolbar.Hide();
             webView.BackgroundColor = new Color(0, 0, 0, 0);
+
+#if UNITY_EDITOR
+            // Unity Editor only - handle safe area automatically for better simulation
+            webView.SetContentInsetAdjustmentBehavior(UniWebViewContentInsetAdjustmentBehavior.Automatic);
+            
+            // In Unity Editor (simulator), use config to decide external browser behavior
+            webView.SetOpenLinksInExternalBrowser(!config.useWebViewForOAuthInEditor);
+            
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[WebViewService] Unity Editor: Enabled automatic safe area adjustment");
+                Debug.Log($"[WebViewService] Unity Editor: External browser for OAuth: {!config.useWebViewForOAuthInEditor}");
+            }
+#else
+            // On real devices, allow external browser only for specific OAuth providers (handled by ShouldHandleRequest)
+            webView.SetOpenLinksInExternalBrowser(false);
+            
+            if (config.enableDebugLogs)
+            {
+                Debug.Log("[WebViewService] Real device: External browser disabled, OAuth handled by ShouldHandleRequest");
+            }
+#endif
 
             // Setup event handlers
             webView.OnMessageReceived += HandleMessage;
@@ -403,6 +469,7 @@ namespace DynamicSDK.Unity.Core
             if (config.enableDebugLogs)
             {
                 Debug.Log($"[WebViewService] WebView configured with user agent: {customUserAgent}");
+                Debug.Log($"[WebViewService] Platform: {Application.platform}");
             }
         }
 
@@ -483,6 +550,21 @@ namespace DynamicSDK.Unity.Core
                 return;
             }
             
+            // In Unity Editor, detect OAuth callback URLs and simulate deeplink
+            #if UNITY_EDITOR
+            if (config.useWebViewForOAuthInEditor && IsOAuthCallbackUrl(url))
+            {
+                if (config.enableDebugLogs)
+                {
+                    Debug.Log($"[WebViewService] Unity Editor: OAuth callback URL detected, simulating deeplink: {url}");
+                }
+                
+                // Simulate deeplink callback for Unity Editor
+                SimulateDeepLinkCallback(url);
+                return;
+            }
+            #endif
+            
             // Check if URL actually changed
             if (currentUrl != url)
             {
@@ -496,6 +578,56 @@ namespace DynamicSDK.Unity.Core
                 
                 // Trigger URL changed event
                 OnUrlChanged?.Invoke(url);
+            }
+        }
+
+        /// <summary>
+        /// Check if URL is an OAuth callback that should be handled as deeplink in Unity Editor
+        /// </summary>
+        private bool IsOAuthCallbackUrl(string url)
+        {
+            // Check for OAuth callback patterns
+            if (url.Contains("dynamicunity://") || 
+                url.Contains("access_token=") || 
+                url.Contains("code=") ||
+                (url.Contains("oauth") && (url.Contains("success") || url.Contains("callback"))))
+            {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// Simulate deeplink callback for Unity Editor OAuth testing
+        /// </summary>
+        private void SimulateDeepLinkCallback(string url)
+        {
+            // Find DeepLinkHandler and simulate the callback
+            var deepLinkHandler = FindFirstObjectByType<DeepLinkHandler>();
+            if (deepLinkHandler != null)
+            {
+                // Use reflection to call private HandleDeepLink method
+                var method = deepLinkHandler.GetType().GetMethod("HandleDeepLink", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    
+                if (method != null)
+                {
+                    method.Invoke(deepLinkHandler, new object[] { url });
+                    
+                    if (config.enableDebugLogs)
+                    {
+                        Debug.Log($"[WebViewService] Unity Editor: Simulated deeplink callback: {url}");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[WebViewService] Unity Editor: Could not find HandleDeepLink method");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[WebViewService] Unity Editor: DeepLinkHandler not found");
             }
         }
 
@@ -563,12 +695,35 @@ namespace DynamicSDK.Unity.Core
             {
                 if (url.Contains(provider))
                 {
-                    // Replace redirect_uri with deeplink
+                    // In Unity Editor (simulator), check config to decide whether to handle OAuth in webview
+                    #if UNITY_EDITOR
+                    if (config.useWebViewForOAuthInEditor)
+                    {
+                        if (config.enableDebugLogs)
+                        {
+                            Debug.Log($"[WebViewService] OAuth provider detected ({provider}) - handling in webview (Unity Editor)");
+                        }
+                        // Allow WebView to handle OAuth URLs in Unity Editor
+                        return true;
+                    }
+                    else
+                    {
+                        if (config.enableDebugLogs)
+                        {
+                            Debug.Log($"[WebViewService] OAuth provider detected ({provider}) - opening in system browser (Unity Editor - config disabled webview)");
+                        }
+                        // Open in system browser even in editor if config says so
+                        string modifiedUrl = ReplaceRedirectUriWithDeeplink(url);
+                        OpenInSystemBrowser(modifiedUrl);
+                        return false;
+                    }
+                    #else
+                    // On real devices (iOS/Android), open in system browser
                     string modifiedUrl = ReplaceRedirectUriWithDeeplink(url);
                     
                     if (config.enableDebugLogs)
                     {
-                        Debug.Log($"[WebViewService] OAuth provider detected ({provider})");
+                        Debug.Log($"[WebViewService] OAuth provider detected ({provider}) - opening in system browser");
                         Debug.Log($"[WebViewService] Original URL: {url}");
                         Debug.Log($"[WebViewService] Modified URL: {modifiedUrl}");
                     }
@@ -578,6 +733,7 @@ namespace DynamicSDK.Unity.Core
                     
                     // Return false to cancel navigation in WebView
                     return false;
+                    #endif
                 }
             }
 

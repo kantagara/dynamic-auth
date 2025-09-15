@@ -46,7 +46,7 @@ public class SampleScript : MonoBehaviour
         DynamicSDKManager.OnWalletConnected += OnWalletConnected;
         DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
         DynamicSDKManager.OnJwtTokenReceived += OnJwtTokenReceived;
-        DynamicSDKManager.OnTransactionSent += OnTransactionSent;
+        DynamicSDKManager.OnTransactionHashReceived += OnTransactionHashReceived;
         DynamicSDKManager.OnMessageSigned += OnMessageSigned;
         DynamicSDKManager.OnSDKError += OnSDKError;
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
@@ -91,7 +91,7 @@ public class SampleScript : MonoBehaviour
         UpdateStatusText("SDK Error: " + error);
     }
 
-    private void OnTransactionSent(string transactionHash)
+    private void OnTransactionHashReceived(string transactionHash)
     {
         Debug.Log($"[SampleScript] Transaction sent: {transactionHash}");
         UpdateButtonInteractability();
@@ -332,23 +332,18 @@ public class SampleScript : MonoBehaviour
     private void UpdateButtonInteractability()
     {
         //check if the wallet is connected
-        if (sdk != null && sdk.IsWalletConnected)
+        if (sdk != null)
         {
-            connectButton.interactable = false;
-            disconnectButton.interactable = true;
-            signButton.interactable = true;
-            sendTransactionButton.interactable = true;
-            getJWTButton.interactable = true;
-            openProfileButton.interactable = true;
+            connectButton.interactable = !sdk.IsWalletConnected;
+            disconnectButton.interactable = sdk.IsWalletConnected;
+            signButton.interactable = sdk.IsWalletConnected;
+            sendTransactionButton.interactable = sdk.IsWalletConnected;
+            getJWTButton.interactable = sdk.IsWalletConnected;
+            openProfileButton.interactable = sdk.IsWalletConnected;
         }
         else
         {
-            connectButton.interactable = false;
-            disconnectButton.interactable = false;
-            signButton.interactable = false;
-            sendTransactionButton.interactable = false;
-            getJWTButton.interactable = false;
-            openProfileButton.interactable = false;
+            Debug.LogWarning("[SampleScript] SDK Manager not available!");
         }
     }
 
@@ -380,7 +375,7 @@ public class SampleScript : MonoBehaviour
         DynamicSDKManager.OnWalletConnected -= OnWalletConnected;
         DynamicSDKManager.OnWalletDisconnected -= OnWalletDisconnected;
         DynamicSDKManager.OnJwtTokenReceived -= OnJwtTokenReceived;
-        DynamicSDKManager.OnTransactionSent -= OnTransactionSent;
+        DynamicSDKManager.OnTransactionHashReceived -= OnTransactionHashReceived;
         DynamicSDKManager.OnMessageSigned -= OnMessageSigned;
         DynamicSDKManager.OnSDKError -= OnSDKError;
         DynamicSDKManager.OnWebViewClosed -= OnWebViewClosed;

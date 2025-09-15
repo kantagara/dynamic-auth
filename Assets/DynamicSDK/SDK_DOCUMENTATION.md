@@ -15,6 +15,7 @@
 11. [Best Practices](#best-practices)
 12. [Troubleshooting](#troubleshooting)
 13. [Advanced Features](#advanced-features)
+14. [Package Publishing & Distribution](#package-publishing--distribution)
 
 ---
 
@@ -2073,6 +2074,58 @@ public class SDKAnalytics : MonoBehaviour
     }
 }
 ```
+
+---
+
+## Package Publishing & Distribution
+
+This section provides comprehensive instructions for packaging and distributing the Dynamic Unity SDK or creating custom packages based on the SDK.
+
+### Export Unity Package (.unitypackage)
+
+Unity packages (.unitypackage) are the traditional way to distribute Unity assets and code. They can be imported directly into any Unity project.
+
+#### 📦 **Creating a Unity Package**
+
+**Step 1: Prepare Your Project**
+
+1. **Clean Your Project**
+   - Remove any test scenes or temporary files
+   - Ensure all scripts compile without errors
+   - Verify all assets are properly referenced
+
+2. **Organize Assets Structure**
+   ```
+   Assets/
+   ├── DynamicSDK/
+   │   ├── Scripts/           # Core SDK scripts
+   │   ├── Prefabs/          # SDK prefabs
+   │   ├── Resources/        # Required resources
+   │   ├── UniWebView/       # WebView dependency
+   │   └── Documentation/    # SDK documentation
+   ```
+
+**Step 2: Export Package**
+
+1. **Select Assets to Include**
+   - In the Project window, select the `DynamicSDK` folder
+
+2. **Export Package**
+   ```
+   Unity Menu → Assets → Export Package...
+   ```
+3. **Configure Export Settings**
+   
+   In the Export Package dialog, you'll see checkboxes for export options:
+   - ✅ **Include dependencies**: Automatically includes required assets
+   - ✅ **Include all scripts**: Includes all script files (recommended for SDK)
+
+4. **Name Your Package**
+   ```
+   Suggested naming: dynamic_unity_sdk.unitypackage
+   ```
+
+
 
 ---
 

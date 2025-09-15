@@ -38,6 +38,17 @@ namespace DynamicSDK.Unity.Core
         [Tooltip("Offset from bottom to move webview higher (0 = at bottom, 0.1 = 10% from bottom)")]
         public float bottomOffset = 0f;
 
+        [Header("Unity Editor Safe Area Settings")]
+        [Tooltip("Handle Unity Editor safe area automatically (for better simulator testing)")]
+        public bool handleEditorSafeAreaAutomatically = true;
+
+        [Range(0.0f, 0.1f)]
+        [Tooltip("Additional bottom padding for Unity Editor safe area (0.05 = 5% of screen height)")]
+        public float editorSafeAreaBottomPadding = 0.05f;
+        
+        [Tooltip("Use webview for OAuth in Unity Editor instead of system browser (for simulator testing)")]
+        public bool useWebViewForOAuthInEditor = true;
+
         public float transitionDuration = 0.35f;
 
         [Tooltip("Allow closing webview by clicking outside of it")]
