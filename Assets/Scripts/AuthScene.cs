@@ -96,7 +96,7 @@ public class AuthScene : MonoBehaviour
         if (!string.IsNullOrEmpty(message))
         {
             Signature.text = default;
-            m_sdk.SignMessage(message);
+            m_sdk.SignMessage(message, isSuiTransaction: true);
         }
     }
 
