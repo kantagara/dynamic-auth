@@ -64,7 +64,7 @@ namespace DynamicSDK.Unity.Core
         public static event Action<JwtTokenResponseMessage> OnJwtTokenReceived;
 
         // Wallet Events  
-        public static event Action<string> OnTransactionHashReceived;
+        public static event Action<TransactionReceipt> OnTransactionReceived;
         public static event Action<string> OnMessageSigned;
         public static event Action<BalanceResponseData> OnBalanceUpdated;
         public static event Action<BalanceResponseData> OnWalletSwitched;
@@ -263,7 +263,7 @@ namespace DynamicSDK.Unity.Core
                 webViewConnector.OnUserAuthenticated += HandleUserAuthenticated;
                 webViewConnector.OnWalletInfoUpdated += HandleWalletInfoUpdated;
                 webViewConnector.OnWalletDisconnected += HandleWalletDisconnected;
-                webViewConnector.OnTransactionSent += HandleTransactionSent;
+                webViewConnector.OnTransactionReceived += HandleTransactionSent;
                 webViewConnector.OnMessageSigned += HandleMessageSigned;
                 webViewConnector.OnBalanceUpdated += HandleBalanceUpdated;
                 webViewConnector.OnWalletsReceived += HandleWalletsReceived;
@@ -368,7 +368,9 @@ namespace DynamicSDK.Unity.Core
         /// Sign a message with the connected wallet
         /// </summary>
         /// <param name="message">Message to sign</param>
-        public void SignMessage(string message)
+        /// <param name="isSuiTransaction">Is the message you're signing a base64 encoded SUI transaction</param>
+        /// <param name="b"></param>
+        public void SignMessage(string message, bool isSuiTransaction = false)
         {
             if (!isInitialized)
             {
@@ -399,7 +401,7 @@ namespace DynamicSDK.Unity.Core
                 Debug.Log($"[DynamicSDKManager] Signing message: {message}");
             }
 
-            webViewConnector?.SignMessage(message);
+            webViewConnector?.SignMessage(message, isSuiTransaction);
         }
 
         /// <summary>
@@ -915,14 +917,14 @@ namespace DynamicSDK.Unity.Core
             OnWalletDisconnected?.Invoke();
         }
 
-        private void HandleTransactionSent(string transactionHash)
+        private void HandleTransactionSent(TransactionReceipt transactionReceipt)
         {
             if (config.enableDebugLogs)
             {
-                Debug.Log($"[DynamicSDKManager] Transaction sent: {transactionHash}");
+                Debug.Log($"[DynamicSDKManager] Transaction sent: {transactionReceipt}");
             }
 
-            OnTransactionHashReceived?.Invoke(transactionHash);
+            OnTransactionReceived?.Invoke(transactionReceipt);
         }
 
         private void HandleMessageSigned(string signature)

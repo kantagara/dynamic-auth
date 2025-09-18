@@ -1,5 +1,6 @@
 using DynamicSDK.Unity.Core;
 using DynamicSDK.Unity.Messages.Auth;
+using DynamicSDK.Unity.Messages.Wallet;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,7 @@ public class SampleScript : MonoBehaviour
     [Header("Input"), Space(10)]
     [SerializeField] private TMP_InputField messageToSignInput;
 
+    [SerializeField] private Toggle suiTransactionToggle;
     [SerializeField] private TMP_InputField recipientAddressInput;
     [SerializeField] private TMP_InputField transactionAmountInput;
     [SerializeField] private TMP_Dropdown chainDropdown;
@@ -46,7 +48,7 @@ public class SampleScript : MonoBehaviour
         DynamicSDKManager.OnWalletConnected += OnWalletConnected;
         DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
         DynamicSDKManager.OnJwtTokenReceived += OnJwtTokenReceived;
-        DynamicSDKManager.OnTransactionHashReceived += OnTransactionHashReceived;
+        DynamicSDKManager.OnTransactionReceived += OnTransactionReceived;
         DynamicSDKManager.OnMessageSigned += OnMessageSigned;
         DynamicSDKManager.OnSDKError += OnSDKError;
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
@@ -91,11 +93,11 @@ public class SampleScript : MonoBehaviour
         UpdateStatusText("SDK Error: " + error);
     }
 
-    private void OnTransactionHashReceived(string transactionHash)
+    private void OnTransactionReceived(TransactionReceipt transactionReceipt)
     {
-        Debug.Log($"[SampleScript] Transaction sent: {transactionHash}");
+        Debug.Log($"[SampleScript] Transaction sent: {transactionReceipt.TransactionHash}");
         UpdateButtonInteractability();
-        transactionHashText.text = "Transaction Hash: " + transactionHash;
+        transactionHashText.text = $"Transaction Hash: {transactionReceipt.TransactionHash}\nTransaction Signature: {transactionReceipt.TransactionSignature}";
         UpdateStatusText("Transaction sent");
     }
 
@@ -209,7 +211,7 @@ public class SampleScript : MonoBehaviour
             return;
         }
 
-        sdk.SignMessage(messageToSign);
+        sdk.SignMessage(messageToSign, suiTransactionToggle.isOn);
         UpdateStatusText("Signing message...");
     }
 
@@ -375,7 +377,7 @@ public class SampleScript : MonoBehaviour
         DynamicSDKManager.OnWalletConnected -= OnWalletConnected;
         DynamicSDKManager.OnWalletDisconnected -= OnWalletDisconnected;
         DynamicSDKManager.OnJwtTokenReceived -= OnJwtTokenReceived;
-        DynamicSDKManager.OnTransactionHashReceived -= OnTransactionHashReceived;
+        DynamicSDKManager.OnTransactionReceived -= OnTransactionReceived;
         DynamicSDKManager.OnMessageSigned -= OnMessageSigned;
         DynamicSDKManager.OnSDKError -= OnSDKError;
         DynamicSDKManager.OnWebViewClosed -= OnWebViewClosed;

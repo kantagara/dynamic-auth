@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using DynamicSDK.Unity.Messages;
 using DynamicSDK.Unity.Messages.Auth;
 using DynamicSDK.Unity.Messages.Wallet;
+using UnityEngine.Serialization;
 
 namespace DynamicSDK.Unity.Utils
 {
@@ -52,6 +53,9 @@ namespace DynamicSDK.Unity.Utils
 
         [JsonProperty("message")]
         public string message;
+        
+        [JsonProperty("isSuiTransaction", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool isSuiTransaction;
     }
 
     [System.Serializable]
@@ -134,7 +138,7 @@ namespace DynamicSDK.Unity.Utils
         /// <summary>
         /// Build sign message request
         /// </summary>
-        public static string BuildSignMessageRequest(string walletAddress, string message)
+        public static string BuildSignMessageRequest(string walletAddress, string message, bool isSuiTransaction)
         {
             var json = new StripSafeWalletRequest
             {
@@ -143,7 +147,8 @@ namespace DynamicSDK.Unity.Utils
                 data = new StripSafeSignMessageData
                 {
                     walletAddress = walletAddress,
-                    message = message
+                    message = message,
+                    isSuiTransaction = isSuiTransaction
                 },
                 requestId = System.Guid.NewGuid().ToString()
             };

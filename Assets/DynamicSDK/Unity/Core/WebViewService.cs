@@ -24,6 +24,7 @@ namespace DynamicSDK.Unity.Core
         public System.Action<string> OnUrlChanged;
         public System.Action OnOAuthCancelled;
 
+        private Rect _webViewRect = new();
         private void Awake()
         {
             config = DynamicSDKConfig.Instance;
@@ -307,7 +308,7 @@ namespace DynamicSDK.Unity.Core
         /// <summary>
         /// Hide WebView with animation (using SetActive instead of destroy)
         /// </summary>
-        public void HideWithAnimation()
+        public void HideWithAnimation(Action onClose = null)
         {
             if (webView != null && isWebViewVisible)
             {
@@ -326,9 +327,21 @@ namespace DynamicSDK.Unity.Core
                         {
                             Debug.Log("[WebViewService] WebView hidden with animation (SetActive false)");
                         }
+                        onClose?.Invoke();
                     }
                 );
             }
+        }
+
+        public void ShrinkWebView()
+        {
+            _webViewRect = webView.Frame;
+            webView.Frame = Rect.zero;
+        }
+        
+        public void ExpandWebView()
+        {
+            webView.Frame = _webViewRect;
         }
 
         /// <summary>

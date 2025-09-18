@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace DynamicSDK.Unity.Core
 {
@@ -41,6 +42,8 @@ namespace DynamicSDK.Unity.Core
         [Header("Unity Editor Safe Area Settings")]
         [Tooltip("Handle Unity Editor safe area automatically (for better simulator testing)")]
         public bool handleEditorSafeAreaAutomatically = true;
+
+        public bool ShowWebViewWhenSigningMessage = false;
 
         [Range(0.0f, 0.1f)]
         [Tooltip("Additional bottom padding for Unity Editor safe area (0.05 = 5% of screen height)")]

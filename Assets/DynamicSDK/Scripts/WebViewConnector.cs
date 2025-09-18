@@ -1,4 +1,5 @@
 using System.Collections;
+using DynamicSDK.Config;
 using UnityEngine;
 using DynamicSDK.Unity.Core;
 using DynamicSDK.Unity.Messages;
@@ -36,7 +37,7 @@ public class WebViewConnector : MonoBehaviour
     public System.Action<UserInfo> OnUserAuthenticated;
     public System.Action<WalletCredential> OnWalletInfoUpdated;
     public System.Action OnWalletDisconnected;
-    public System.Action<string> OnTransactionSent;
+    public System.Action<TransactionReceipt> OnTransactionReceived;
     public System.Action<string> OnMessageSigned;
     public System.Action<BalanceResponseData> OnBalanceUpdated;
     public System.Action<BalanceResponseData> OnWalletSwitched;
@@ -63,7 +64,7 @@ public class WebViewConnector : MonoBehaviour
     /// <summary>
     /// Sign message - public method for DynamicSDKManager
     /// </summary>
-    public void SignMessage(string message) { SignMessageInternal(message); }
+    public void SignMessage(string message, bool isSuiTransaction) { SignMessageInternal(message, isSuiTransaction); }
 
     /// <summary>
     /// Send transaction - public method for DynamicSDKManager
@@ -604,7 +605,7 @@ public class WebViewConnector : MonoBehaviour
         if (message.data.success)
         {
             Debug.Log($"[WebViewConnector] Message signed successfully: {message.data.signature}");
-
+            Debug.Log($"[WebViewConnector] Original message: {message.data.message}");
             // Fire message signed event
             OnMessageSigned?.Invoke(message.data.signature);
         }
@@ -614,8 +615,13 @@ public class WebViewConnector : MonoBehaviour
             OnError?.Invoke($"Sign failed: {message.data.error}");
         }
 
-        // Hide webview after signing operation
-        webViewService?.HideWithAnimation();
+        webViewService?.HideWithAnimation(() =>
+        {
+            if(!DynamicSDKManager.Instance.Config.ShowWebViewWhenSigningMessage)
+                webViewService?.ExpandWebView();
+        });
+
+       
     }
 
     private void HandleTransactionResponse(TransactionResponseMessage message)
@@ -630,10 +636,15 @@ public class WebViewConnector : MonoBehaviour
 
         if (message.data.success)
         {
-            Debug.Log($"[WebViewConnector] Transaction successful: {message.data.transactionHash}");
+            var transactionReceipt = new TransactionReceipt()
+            {
+                TransactionHash = message.data.transactionHash,
+                TransactionBytes = message.data.transactionBytes,
+                TransactionSignature = message.data.transactionSignature
+            };
+            Debug.Log($"[WebViewConnector] Transaction successful: {transactionReceipt}");
 
-            // Fire transaction sent event
-            OnTransactionSent?.Invoke(message.data.transactionHash);
+            OnTransactionReceived?.Invoke(transactionReceipt);
         }
         else
         {
@@ -830,7 +841,7 @@ public class WebViewConnector : MonoBehaviour
         Debug.LogWarning("[WebViewConnector] SignMessageInternal() called without message parameter");
     }
 
-    private void SignMessageInternal(string message)
+    private void SignMessageInternal(string message, bool isSuiTransaction)
     {
         if (string.IsNullOrEmpty(message))
         {
@@ -851,16 +862,17 @@ public class WebViewConnector : MonoBehaviour
 
         Debug.Log($"[WebViewConnector] Sign message requested: {message}");
 
-        // Queue this request to prevent conflicts with other WebView operations
         QueueWebViewRequest(() =>
         {
-            // Open WebView if needed and send request
+            
+            if(!DynamicSDKManager.Instance.Config.ShowWebViewWhenSigningMessage)
+                webViewService?.ShrinkWebView();
             webViewService?.OpenBottomSheet();
-            webViewService?.RetryWithDelay(() => SendSignMessageRequest(message), 1.0f);
+            webViewService?.RetryWithDelay(() => SendSignMessageRequest(message, isSuiTransaction), 1.0f);
         });
     }
 
-    private void SendSignMessageRequest(string message)
+    private void SendSignMessageRequest(string message, bool isSuiTransaction)
     {
         if (!RequestBuilder.Validator.IsValidMessage(message))
         {
@@ -869,8 +881,11 @@ public class WebViewConnector : MonoBehaviour
             return;
         }
 
-        string request = RequestBuilder.BuildSignMessageRequest(currentWalletAddress, message);
+        string request = RequestBuilder.BuildSignMessageRequest(currentWalletAddress, message, isSuiTransaction);
+     
+        
         webViewService?.SendMessage(request);
+        
 
         Debug.Log($"[WebViewConnector] Sent sign message request: {request}");
     }
