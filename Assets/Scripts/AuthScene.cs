@@ -6,6 +6,7 @@ using DynamicSDK.Unity.Messages;
 using DynamicSDK.Unity.Messages.Auth;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public class AuthScene : MonoBehaviour
@@ -40,7 +41,7 @@ public class AuthScene : MonoBehaviour
         DynamicSDKManager.OnSDKError += OnSDKError;
         DynamicSDKManager.OnWebViewReady += OnWebViewReady;
         DynamicSDKManager.OnWebViewClosed += OnWebViewClosed;
-        DynamicSDKManager.OnMessageSigned += OnMessageSigned;        
+        DynamicSDKManager.OnMessageSigned += OnMessageSigned;
 
         JwtCopyButton.onClick.AddListener(CopyJwt);
         SignButton.onClick.AddListener(SignMessage);
@@ -72,6 +73,8 @@ public class AuthScene : MonoBehaviour
 
         m_sdk = DynamicSDKManager.Instance;
         ShowDynamicAuth();
+
+        _ = LoadConfig();
     }
 
     /////////////////////////////////////////////////
@@ -237,5 +240,34 @@ public class AuthScene : MonoBehaviour
         }
 
         DynamicSDKManager.Instance.GetJwtToken();
+    }
+
+    private async Awaitable LoadConfig()
+    {
+        Debug.Log($"Download Config");
+        var url = $"https://remote-config.game.claynosaurz.com/configs/claynosaurz:android:googleplay/beta";
+
+        using var request = UnityWebRequest.Get(url);
+        request.timeout = 20;
+        // request.certificateHandler = new CustomCertificateHandler();
+
+        await request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            Debug.Log($"Config data: {request.downloadHandler.text}");
+        }
+        else if (request.result == UnityWebRequest.Result.ConnectionError)
+        {
+            Debug.LogWarning($"Config connection error: {request.error}");
+        }
+        else if (request.result == UnityWebRequest.Result.ProtocolError)
+        {
+            Debug.LogWarning($"Config protocol error: {request.error}");
+        }
+        else
+        {
+            Debug.LogWarning($"Config error: {request.error}");
+        }
     }
 }
