@@ -25,8 +25,6 @@ public class AuthScene : MonoBehaviour
 
     DynamicSDKManager m_sdk;
     DynamicSDKManifest m_manifest;
-    bool m_isWebviewReady = false;
-    bool m_walletConnected = false;
     bool m_isAuthenticating;
     int m_authResult = default;
 
@@ -90,7 +88,7 @@ public class AuthScene : MonoBehaviour
 
     void SignMessage()
     {
-        if (!m_walletConnected)
+        if (!m_sdk.IsWalletConnected)
         {
             return;
         }
@@ -116,13 +114,13 @@ public class AuthScene : MonoBehaviour
             m_sdk.InitializeSDK();
         }
 
-        if (!m_isWebviewReady)
+        if (!m_sdk.IsWebViewReady)
         {
             m_waitingWebviewReady = true;
             return;
         }
 
-        if (!m_walletConnected)
+        if (!m_sdk.IsWalletConnected)
         {
             m_isAuthenticating = true;
             m_authResult = default;
@@ -137,7 +135,7 @@ public class AuthScene : MonoBehaviour
 
     private void Disconnect()
     {
-        if (!m_walletConnected)
+        if (!m_sdk.IsWalletConnected)
         {
             return;
         }
@@ -151,14 +149,12 @@ public class AuthScene : MonoBehaviour
     private void OnWalletConnected(string walletAddress)
     {
         Debug.Log($"[DynamicTest] Wallet connected: {walletAddress}");
-        m_walletConnected = true;
         m_authResult = 1;
     }
 
     private void OnWalletDisconnected()
     {
         Debug.Log($"[DynamicTest] Wallet disconnected");
-        m_walletConnected = false;
 
         JwtResult.text = default;
     }
@@ -186,13 +182,12 @@ public class AuthScene : MonoBehaviour
     private void OnWebViewReady()
     {
         Debug.Log("[DynamicTest] WebView ready");
-        m_isWebviewReady = true;
 
         if (m_waitingWebviewReady)
         {
             m_waitingWebviewReady = false;
 
-            if (!m_walletConnected)
+            if (!m_sdk.IsWalletConnected)
             {
                 m_isAuthenticating = true;
                 m_authResult = default;
