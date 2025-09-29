@@ -129,7 +129,7 @@ public class MainCanvasManager : MonoBehaviour
         DynamicSDKManager.OnUserAuthenticated += OnUserAuthenticated;
         DynamicSDKManager.OnWalletInfoUpdated += OnWalletInfoUpdated;
         DynamicSDKManager.OnWalletDisconnected += OnWalletDisconnected;
-        DynamicSDKManager.OnTransactionSent += OnTransactionSent;
+        DynamicSDKManager.OnTransactionReceived += OnTransactionReceived;
         DynamicSDKManager.OnMessageSigned += OnMessageSigned;
         DynamicSDKManager.OnBalanceUpdated += OnBalanceUpdated;
         DynamicSDKManager.OnWalletSwitched += OnWalletSwitched;
@@ -347,10 +347,10 @@ public class MainCanvasManager : MonoBehaviour
         ReturnToLogin();
     }
 
-    private void OnTransactionSent(string transactionHash)
+    private void OnTransactionReceived(TransactionReceipt transactionReceipt)
     {
-        Debug.Log($"[MainCanvasManager] Transaction sent: {transactionHash}");
-        UpdateTransactionStatus($"✅ Transaction sent! Hash: {FormatHash(transactionHash)}", false);
+        Debug.Log($"[MainCanvasManager] Transaction sent: {transactionReceipt.TransactionHash}");
+        UpdateTransactionStatus($"✅ Transaction sent! Hash: {FormatHash(transactionReceipt.TransactionHash)}", false);
     }
 
     private void OnMessageSigned(string signature)
@@ -1044,7 +1044,7 @@ public class MainCanvasManager : MonoBehaviour
         DynamicSDKManager.OnUserAuthenticated -= OnUserAuthenticated;
         DynamicSDKManager.OnWalletInfoUpdated -= OnWalletInfoUpdated;
         DynamicSDKManager.OnWalletDisconnected -= OnWalletDisconnected;
-        DynamicSDKManager.OnTransactionSent -= OnTransactionSent;
+        DynamicSDKManager.OnTransactionReceived -= OnTransactionReceived;
         DynamicSDKManager.OnMessageSigned -= OnMessageSigned;
         DynamicSDKManager.OnBalanceUpdated -= OnBalanceUpdated;
         DynamicSDKManager.OnWalletSwitched -= OnWalletSwitched;

@@ -1,5 +1,5 @@
 using System;
-using UnityEngine;
+using Newtonsoft.Json;
 
 namespace DynamicSDK.Unity.Messages.Wallet
 {
@@ -23,7 +23,8 @@ namespace DynamicSDK.Unity.Messages.Wallet
 
         public override string ToString()
         {
-            return $"BalanceResponseData {{ WalletAddress: {walletAddress}, Chain: {chain}, Balance: {balance} {symbol}, Success: {success}, Error: {error} }}";
+            return
+                $"BalanceResponseData {{ WalletAddress: {walletAddress}, Chain: {chain}, Balance: {balance} {symbol}, Success: {success}, Error: {error} }}";
         }
     }
 
@@ -59,7 +60,8 @@ namespace DynamicSDK.Unity.Messages.Wallet
 
         public override string ToString()
         {
-            return $"SignMessageResponseData {{ WalletAddress: {walletAddress}, Message: {message}, Success: {success}, Error: {error} }}";
+            return
+                $"SignMessageResponseData {{ WalletAddress: {walletAddress}, Message: {message}, Success: {success}, Error: {error} }}";
         }
     }
 
@@ -94,10 +96,15 @@ namespace DynamicSDK.Unity.Messages.Wallet
         public string gasUsed;
         public long blockNumber;
         public int confirmations;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        public string transactionSignature;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        public string transactionBytes;
 
         public override string ToString()
         {
-            return $"TransactionResponseData {{ WalletAddress: {walletAddress}, TxHash: {transactionHash}, Success: {success}, Error: {error} }}";
+            return
+                $"{nameof(walletAddress)}: {walletAddress}, {nameof(transactionHash)}: {transactionHash}, {nameof(success)}: {success}, {nameof(error)}: {error}, {nameof(gasUsed)}: {gasUsed}, {nameof(blockNumber)}: {blockNumber}, {nameof(confirmations)}: {confirmations}, {nameof(transactionSignature)}: {transactionSignature}";
         }
     }
 
@@ -115,6 +122,19 @@ namespace DynamicSDK.Unity.Messages.Wallet
         public override string ToString()
         {
             return $"TransactionResponseMessage {{ Type: {type}, Action: {action}, Data: {data} }}";
+        }
+    }
+
+    public class TransactionReceipt
+    {
+        public string TransactionHash { get; set; }
+        public string TransactionSignature { get; set; }
+        public string TransactionBytes { get; set; }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(TransactionHash)}: {TransactionHash}, {nameof(TransactionSignature)}: {TransactionSignature}, {nameof(TransactionBytes)}: {TransactionBytes}";
         }
     }
 
@@ -228,7 +248,8 @@ namespace DynamicSDK.Unity.Messages.Wallet
 
         public override string ToString()
         {
-            return $"WalletsResponseData {{ WalletsCount: {wallets?.Length ?? 0}, PrimaryWallet: {primaryWallet?.address}, Success: {success}, Error: {error} }}";
+            return
+                $"WalletsResponseData {{ WalletsCount: {wallets?.Length ?? 0}, PrimaryWallet: {primaryWallet?.address}, Success: {success}, Error: {error} }}";
         }
     }
 
@@ -269,7 +290,8 @@ namespace DynamicSDK.Unity.Messages.Wallet
 
         public override string ToString()
         {
-            return $"NetworkInfo {{ ChainId: {chainId}, Name: {name}, VanityName: {vanityName}, IsTestnet: {isTestnet}, Symbol: {nativeCurrency?.symbol} }}";
+            return
+                $"NetworkInfo {{ ChainId: {chainId}, Name: {name}, VanityName: {vanityName}, IsTestnet: {isTestnet}, Symbol: {nativeCurrency?.symbol} }}";
         }
     }
 
@@ -297,7 +319,8 @@ namespace DynamicSDK.Unity.Messages.Wallet
 
         public override string ToString()
         {
-            return $"NetworksResponseData {{ NetworksCount: {networks?.Length ?? 0}, Success: {success}, Error: {error} }}";
+            return
+                $"NetworksResponseData {{ NetworksCount: {networks?.Length ?? 0}, Success: {success}, Error: {error} }}";
         }
     }
 
