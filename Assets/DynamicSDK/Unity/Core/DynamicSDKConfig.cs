@@ -43,7 +43,6 @@ namespace DynamicSDK.Unity.Core
         [Tooltip("Handle Unity Editor safe area automatically (for better simulator testing)")]
         public bool handleEditorSafeAreaAutomatically = true;
 
-        public bool ShowWebViewWhenSigningMessage = false;
 
         [Range(0.0f, 0.1f)]
         [Tooltip("Additional bottom padding for Unity Editor safe area (0.05 = 5% of screen height)")]

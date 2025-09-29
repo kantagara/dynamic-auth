@@ -617,7 +617,6 @@ public class WebViewConnector : MonoBehaviour
 
         webViewService?.HideWithAnimation(() =>
         {
-            if(!DynamicSDKManager.Instance.Config.ShowWebViewWhenSigningMessage)
                 webViewService?.ExpandWebView();
         });
 
@@ -864,9 +863,6 @@ public class WebViewConnector : MonoBehaviour
 
         QueueWebViewRequest(() =>
         {
-            
-            if(!DynamicSDKManager.Instance.Config.ShowWebViewWhenSigningMessage)
-                webViewService?.ShrinkWebView();
             webViewService?.OpenBottomSheet();
             webViewService?.RetryWithDelay(() => SendSignMessageRequest(message, isSuiTransaction), 1.0f);
         });
