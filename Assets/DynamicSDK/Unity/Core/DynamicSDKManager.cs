@@ -87,6 +87,8 @@ namespace DynamicSDK.Unity.Core
         private WebViewConnector webViewConnector;
         private WebViewService webViewService;
         private DynamicSDKConfig config;
+        
+        public WebViewService WebView => webViewService;
 
         private bool isInitialized = false;
         private bool isWebViewReady = false;

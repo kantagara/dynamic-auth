@@ -49,7 +49,6 @@ namespace DynamicSDK.Config
         public bool enableDebugLogs = true;
         public bool logRawMessages = false;
         
-        public bool ShowWebViewWhenSigningMessage = false;
         
         /// <summary>
         /// Get the appropriate server URL based on platform
@@ -83,7 +82,6 @@ namespace DynamicSDK.Config
             config.enableWebViewPreload = enableWebViewPreload;
             config.enableDebugLogs = enableDebugLogs;
             config.logRawMessages = logRawMessages;
-            config.ShowWebViewWhenSigningMessage = ShowWebViewWhenSigningMessage;
             
             Debug.Log($"[DynamicSDKConfig] Applied configuration with server URL: {GetServerUrl()}");
             Debug.Log($"[DynamicSDKConfig] Unity Editor Safe Area handling: {handleEditorSafeAreaAutomatically}");

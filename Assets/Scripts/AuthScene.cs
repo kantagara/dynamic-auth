@@ -97,6 +97,8 @@ public class AuthScene : MonoBehaviour
         if (!string.IsNullOrEmpty(message))
         {
             Signature.text = default;
+            
+            m_sdk.WebView.ShrinkWebView();
             m_sdk.SignMessage(message, isSuiTransaction: true);
         }
     }
@@ -221,6 +223,7 @@ public class AuthScene : MonoBehaviour
 
     private void OnMessageSigned(string signature)
     {
+        m_sdk.WebView.ExpandWebView();
         Signature.text = signature;
         GUIUtility.systemCopyBuffer = signature;
     }
